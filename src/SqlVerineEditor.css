@@ -1,0 +1,317 @@
+.buttonArea {
+    margin-top: 5px;
+    font-family: monospace;
+    font-size: 1.3em;
+}
+
+.mainMenu.leftMenu {
+    text-align: left;
+}
+
+div.col.centerMenu {
+    text-align: center;
+}
+
+.mainMenu .rightMenu {
+    text-align: right;
+}
+
+.buttonArea button,
+.buttonArea input {
+    display: inline-block;
+    padding: 0.35em 1.0em 0.15em;
+    border: 0;
+    margin: 0 0.3em 0.3em 0;
+    border-radius: 0.18em;
+    box-sizing: border-box;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.2s;
+    background-color: #fff;
+}
+
+.buttonArea input {
+    width: 5em;
+}
+
+.buttonArea select {
+    appearance: none;
+    -webkit-appearance: button;
+    -moz-appearance: button;
+    border: none;
+    border-radius: 0.18em;
+    padding: 0.35em 1.0em 0.15em;
+    margin: 0 0.3em 0.3em 0;
+    font-family: inherit;
+    font-size: inherit;
+    cursor: inherit;
+    line-height: inherit;
+    background-repeat: no-repeat;
+    background-position-x: 100%;
+    background-position-y: 0.1em;
+    box-sizing: border-box;
+    cursor: pointer;
+    background-color: #fff;
+    outline: none;
+    width: min-content;
+}
+
+.buttonArea select::-ms-expand {
+    display: none;
+}
+
+.buttonArea select:invalid,
+.buttonArea select.sqlSelect:invalid,
+.buttonArea select.sqlWhere:invalid {
+    color: gray;
+}
+
+.buttonArea select:hover,
+.buttonArea button:hover {
+    background-color: aliceblue;
+}
+
+.buttonArea input:focus {
+    outline: none;
+    background-color: aliceblue;
+}
+
+
+/* Unterstreichung der Befehle */
+
+.buttonArea .sqlSelect,
+.buttonArea .sqlGroup,
+.buttonArea .sqlJoin,
+.buttonArea .sqlOrder,
+.buttonArea .sqlDelete,
+.buttonArea .sqlUpdate,
+.buttonArea .sqlInsert {
+    display: inline-block;
+    border-bottom: 0.15em solid steelblue;
+}
+
+.buttonArea button.sqlSelect,
+.buttonArea button.sqlGroup,
+.buttonArea button.sqlJoin,
+.buttonArea button.sqlOrder,
+.buttonArea button.sqlWhere,
+.buttonArea button.sqlDelete,
+.buttonArea button.sqlUpdate,
+.buttonArea button.sqlInsert {
+    border-bottom: 0.15em solid steelblue;
+}
+
+
+/* Code Coloring & Befehlsfarben*/
+
+.codeArea .synSQL,
+.buttonArea .synSQL {
+    color: steelblue;
+}
+
+.buttonArea select.synSQL {
+    background-image: url("data:image/svg+xml;utf8,<svg fill='steelblue' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+}
+
+.codeArea .synTables,
+.buttonArea .synTables {
+    color: cadetblue;
+}
+
+.buttonArea select.synTables {
+    background-image: url("data:image/svg+xml;utf8,<svg fill='cadetblue' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+}
+
+.codeArea .synColumns,
+.buttonArea .synColumns {
+    color: tomato;
+}
+
+.buttonArea select.synColumns {
+    background-image: url("data:image/svg+xml;utf8,<svg fill='tomato' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+}
+
+.codeArea .synOperators,
+.buttonArea .synOperators {
+    color: goldenrod;
+}
+
+.buttonArea select.synOperators {
+    background-image: url("data:image/svg+xml;utf8,<svg fill='goldenrod' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+}
+
+.codeArea .synBrackets,
+.buttonArea .synBrackets {
+    color: indigo;
+}
+
+.buttonArea select.synBrackets {
+    background-image: url("data:image/svg+xml;utf8,<svg fill='indigo' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+}
+
+.codeArea .synValues,
+.buttonArea .synValues {
+    color: orchid;
+}
+
+.buttonArea select.synValues {
+    background-image: url("data:image/svg+xml;utf8,<svg fill='orchid' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+}
+
+.codeArea .synTyp,
+.buttonArea .synTyp {
+    color: grey;
+}
+
+.buttonArea select.synTyp {
+    background-image: url("data:image/svg+xml;utf8,<svg fill='grey' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+}
+
+
+/* Löschen, Hinzufügen, Run Button*/
+
+.buttonArea button.btnDelete {
+    color: orangered;
+    border-bottom: 0.15em solid orangered;
+}
+
+.buttonArea button.btnAdd {
+    color: forestgreen;
+    border-bottom: 0.15em solid forestgreen;
+}
+
+.buttonArea button.btnRun,
+.buttonArea button.btnRunMobile {
+    color: forestgreen;
+    border-bottom: 0.15em solid forestgreen;
+}
+
+.buttonArea button.btnUndo,
+.buttonArea button.btnRedo {
+    color: cornflowerblue;
+    border-bottom: 0.15em solid cornflowerblue;
+}
+
+
+/* */
+
+.codeAreaWrapper {
+    position: relative;
+}
+
+#btnCreateUrl {
+    position: absolute;
+    top: 0em;
+    right: 0.3em;
+    color: slategrey;
+    border: none;
+    background: transparent none;
+}
+
+#sqlVerineSwitchForm {
+    position: absolute;
+    right: 0em;
+    top: -1.7em;
+}
+
+#codeAreaText{
+    display: none;
+}
+
+/* Linenumbers */
+
+.codeArea {
+    font-family: monospace;
+    font-size: 1.3em;
+    border: 1px solid lightgrey;
+    min-height: 3.1em;
+}
+
+code {
+    font-family: monospace;
+}
+
+pre {
+    font-family: monospace;
+    background-color: #fff;
+    margin: 0.4em auto;
+    padding: 0.5em;
+    border-radius: 0.25em;
+    line-height: 0;
+    counter-reset: line;
+    white-space: pre-line;
+}
+
+pre span.codeline .active span span {
+    background-color: lightblue;
+}
+
+pre span.codeline {
+    display: block;
+    line-height: 1.5rem;
+}
+
+pre span.codeline span:first {
+    padding-left: 2em;
+}
+
+.codeComponentsScrolldots {
+    text-align: center;
+    color: slategrey;
+}
+
+.codeComponentsScrolldots a:not([href]) {
+    color: lightgray;
+    text-decoration: none;
+    padding: 0.2em;
+}
+
+.codeComponentsScrolldots a:not([href]).activeDot {
+    color: slategrey;
+}
+
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+
+.buttonArea.codeComponents::-webkit-scrollbar {
+    display: none;
+}
+
+
+/* Hide scrollbar for IE, Edge and Firefox */
+
+.buttonArea.codeComponents {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+@media (min-width: 768px) {
+
+    /* bootstrap md breakpoint */
+    pre span.codeline:before {
+        counter-increment: line;
+        content: counter(line);
+        display: inline-block;
+        border-right: 1px solid #ddd;
+        padding: 0 0.5em;
+        margin-right: 0.5em;
+        color: #888;
+    }
+}
+
+@media (max-width: 768px) {
+
+    /* bootstrap md breakpoint */
+    .buttonArea {
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) and (min-resolution:.001dpcm) {
+    .buttonArea select {
+        appearance: none;
+    }
+}

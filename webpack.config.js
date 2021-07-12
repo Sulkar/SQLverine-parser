@@ -25,6 +25,7 @@ module.exports = {
         new CopyPlugin({
             patterns: [
                 { from: 'src/index.html', to: '' },
+                { from: 'src/SqlVerineEditor.css', to: '' },
             ],
         }),
     ],
