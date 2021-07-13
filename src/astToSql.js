@@ -2,6 +2,31 @@
 
 const has = require('has');
 
+var LAST_SQL_ELEMENT = "";
+//SQL spans
+const spanSelect = '<span class="codeElement_11 btnSelect synSQL sqlSelect start parent sqlIdentifier inputFields active" data-sql-element="SELECT">';
+const spanSelectSelect = '<span class="codeElement_13 selColumn synColumns lehrer inputField sqlIdentifier root" data-sql-element="SELECT_SELECT" data-next-element="17" data-element-group="undefined">';
+const spanSelectFrom = '<span class="codeElement_17 selTable synTables inputField sqlIdentifier root" data-sql-element="SELECT_FROM" data-next-element="13" data-element-group="undefined">';
+
+const spanWhere = '<span class="codeElement_46 btnWhere synSQL sqlWhere parent sqlIdentifier inputFields active" data-sql-element="WHERE">';
+const spanWhere1 = '<span class="codeElement_48 selColumn synColumns klassen inputField sqlIdentifier root" data-sql-element="WHERE_1" data-next-element="50" data-element-group="undefined">';
+const spanWhere2 = '<span class="codeElement_50 selOperators synOperators sqlWhere inputField sqlIdentifier root" data-sql-element="WHERE_2" data-next-element="52" data-element-group="undefined">';
+const spanWhere3 = '<span class="codeElement_52 inputField unfilled root sqlIdentifier input" data-sql-element="WHERE_3" data-next-element="48">';
+
+const spanAnd = '<span class="codeElement_60 btnAND synSQL sqlWhere parent sqlIdentifier inputFields active" data-sql-element="AND">';
+const spanAnd1 = '<span class="codeElement_63 inputField unfilled root sqlIdentifier" data-sql-element="WHERE_AND_1" data-next-element="65">';
+const spanAnd2 = '<span class="codeElement_65 inputField unfilled root sqlIdentifier" data-sql-element="WHERE_AND_2" data-next-element="67">';
+const spanAnd3 = '<span class="codeElement_65 inputField unfilled root sqlIdentifier" data-sql-element="WHERE_AND_2" data-next-element="68">';
+
+const spanLeerzeichen = '<span class="codeElement_12 leerzeichen" data-goto-element="parent">&nbsp;</span>';
+const spanLeerzeichenMitKomma = '';
+
+
+
+
+
+
+
 const escapeMap = {
     '\0': '\\0',
     "'": "\\'",
@@ -26,8 +51,12 @@ function identifierToSql(ident) {
 }
 
 function literalToSQL(literal) {
-    const { type } = literal;
-    let { value } = literal;
+    const {
+        type
+    } = literal;
+    let {
+        value
+    } = literal;
 
     if (type === 'number') {
         /* nothing */
@@ -45,22 +74,39 @@ function literalToSQL(literal) {
     return !literal.parentheses ? value : '(' + value + ')';
 }
 
-function aggrToSQL({ name: fnName, quantifier, args }) {
-    return fnName + '(' + (quantifier ? quantifier + ' ' : '') + exprToSQL(args.expr) + ')';
+function aggrToSQL({
+    name: fnName,
+    quantifier,
+    args
+}) {
+    return "" + fnName + '(' + (quantifier ? quantifier + ' ' : '') + "<span>" + exprToSQL(args.expr) + "</span>" + ')';
 }
 
 function binaryToSQL(expr) {
     let operator = expr.operator;
     let rstr = exprToSQL(expr.right);
 
+    if(operator == "AND") LAST_SQL_ELEMENT = "AND";
+
+    console.log(operator)
     if (Array.isArray(rstr)) {
         if (operator === '=') operator = 'IN';
         if (operator === '!=') operator = 'NOT IN';
         if (operator === 'BETWEEN' || operator === 'NOT BETWEEN') rstr = rstr[0] + ' AND ' + rstr[1];
-        else rstr = '(' + rstr.join(', ') + ')';
+        else rstr = '(' + "<span>" + rstr.join('</span>, <span>') + '</span>)';
     }
 
-    const str = exprToSQL(expr.left) + ' ' + operator + ' ' + rstr;
+    //welcher sql Befehl ruft binaryToSQL auf? 
+    var str;
+    if (LAST_SQL_ELEMENT == "WHERE") {
+        str = spanWhere1 + exprToSQL(expr.left) + "</span>" + ' ' + spanWhere2 + operator + "</span>" + ' ' + spanWhere3 + rstr + "</span>";
+    } 
+    else if (LAST_SQL_ELEMENT == "AND") {
+        str = spanAnd1 + exprToSQL(expr.left) + "</span>" + ' ' + spanAnd2 + operator + "</span>" + ' ' + spanAnd3 + rstr + "</span>";
+    }else {
+        str = "<spanLeftEx>" + exprToSQL(expr.left) + "</spanLeftEx>" + ' ' + "<spanOp>" + operator + "</spanOp>" + ' ' + "<spanRightEx>" + rstr + "</spanRightEx>";
+    }
+
 
     return !expr.parentheses ? str : '(' + str + ')';
 }
@@ -126,9 +172,9 @@ function columnsToSQL(columns) {
                 else str += '"' + column.as + '"';
             }
 
-            return str;
+            return spanSelectSelect + str + "</span>";
         })
-        .join(', ');
+        .join('<span>, </span>');
 }
 
 /**
@@ -147,7 +193,7 @@ function tablesToSQL(tables) {
         str += ' (' + baseTable.columns.map(identifierToSql).join(', ') + ')';
     }
 
-    clauses.push(str);
+    clauses.push(spanSelectFrom + str + "</span>");
 
     for (let i = 1; i < tables.length; i++) {
         const joinExpr = tables[i];
@@ -156,7 +202,7 @@ function tablesToSQL(tables) {
 
         if (joinExpr.table) {
             if (joinExpr.db !== null) str += joinExpr.db + '.';
-            str += identifierToSql(joinExpr.table);
+            str += "<span join>" + identifierToSql(joinExpr.table) + "</span join>";
         } else {
             str += exprToSQL(joinExpr.expr);
         }
@@ -165,7 +211,7 @@ function tablesToSQL(tables) {
         if (has(joinExpr, 'columns') && Array.isArray(joinExpr.columns) && joinExpr.columns.length) {
             str += ' (' + joinExpr.columns.map(identifierToSql).join(', ') + ')';
         }
-        if (has(joinExpr, 'on') && joinExpr.on !== null) str += ' ON ' + exprToSQL(joinExpr.on);
+        if (has(joinExpr, 'on') && joinExpr.on !== null) str += '<span> ON </span>' + exprToSQL(joinExpr.on);
         if (has(joinExpr, 'using')) str += ' USING (' + joinExpr.using.map(identifierToSql).join(', ') + ')';
 
         clauses.push(str);
@@ -182,13 +228,13 @@ function withToSql(withExpr) {
         'WITH ' +
         (withExpr.recursive ? 'RECURSIVE ' : '') +
         withExpr.value
-            .map((cte) => {
-                const name = `"${cte.name}"`;
-                const columns = Array.isArray(cte.columns) ? '(' + cte.columns.join(', ') + ')' : '';
+        .map((cte) => {
+            const name = `"${cte.name}"`;
+            const columns = Array.isArray(cte.columns) ? '(' + cte.columns.join(', ') + ')' : '';
 
-                return name + columns + ' AS (' + exprToSQL(cte.stmt) + ')';
-            })
-            .join(', ')
+            return name + columns + ' AS (' + exprToSQL(cte.stmt) + ')';
+        })
+        .join(', ')
     );
 }
 
@@ -207,7 +253,7 @@ function withToSql(withExpr) {
  * @return {string}
  */
 function selectToSQL(stmt) {
-    const clauses = ['SELECT'];
+    const clauses = [spanSelect + 'SELECT'];
 
     if (has(stmt, 'with') && stmt.with !== null) clauses.unshift(withToSql(stmt.with));
     if (has(stmt, 'options') && Array.isArray(stmt.options)) clauses.push(stmt.options.join(' '));
@@ -218,7 +264,19 @@ function selectToSQL(stmt) {
     // FROM + joins
     if (Array.isArray(stmt.from)) clauses.push('FROM', tablesToSQL(stmt.from));
 
-    if (has(stmt, 'where') && stmt.where !== null) clauses.push('WHERE ' + exprToSQL(stmt.where));
+    clauses.push("</span>");
+
+
+
+
+    if (has(stmt, 'where') && stmt.where !== null) {
+        LAST_SQL_ELEMENT = "WHERE";
+        clauses.push(spanWhere + 'WHERE ' + exprToSQL(stmt.where));
+        clauses.push("</span>");
+    }
+
+
+
     if (Array.isArray(stmt.groupby) && stmt.groupby.length > 0)
         clauses.push('GROUP BY', getExprListSQL(stmt.groupby).join(', '));
     if (has(stmt, 'having') && stmt.having !== null) clauses.push('HAVING ' + exprToSQL(stmt.having));
@@ -230,7 +288,7 @@ function selectToSQL(stmt) {
 
     if (Array.isArray(stmt.limit)) clauses.push('LIMIT', stmt.limit.map(exprToSQL));
 
-    return clauses.join(' ');
+    return clauses.join(' '); //erstellt String aus Array
 }
 
 function unaryToSQL(expr) {
@@ -250,7 +308,8 @@ function valuesToSQL(expr) {
 
 function unionToSQL(stmt) {
     const res = [selectToSQL(stmt)];
-
+    console.log("Union");
+    console.log(res);
     while (stmt._next) {
         res.push('UNION', selectToSQL(stmt._next));
         stmt = stmt._next;
@@ -283,7 +342,7 @@ function exprToSQL(expr) {
     return exprToSQLConvertFn[expr.type] ? exprToSQLConvertFn[expr.type](expr) : literalToSQL(expr);
 }
 
-module.exports = function toSQL(ast) {
+module.exports = function astToSQL(ast) {
     if (ast.type !== 'select') throw new Error('Only SELECT statements supported at the moment');
     return unionToSQL(ast);
 };
