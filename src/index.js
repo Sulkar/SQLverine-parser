@@ -45,7 +45,7 @@ document.querySelector('#sqlToParse').value = "SELECT name FROM schueler WHERE i
 document.querySelector('#btnParse').addEventListener("click", function () {
     let zuParsendenString = document.querySelector('#sqlToParse').value;
     let outputAST = parser.parse(zuParsendenString);
-    console.log(outputAST);
+    console.log(outputAST.ast);
 
     var outputSQL = astToSQL(outputAST.ast);
     outputDiv.innerHTML = outputSQL;
