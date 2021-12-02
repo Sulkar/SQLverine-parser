@@ -17,8 +17,23 @@ WHERE schueler.id < '55' AND schueler.vorname LIKE 'Ri%'
 }
 
 Start
-  = (SelectStmt*)?  (JoinStmt*)? (WhereStmt*)? (AndOrStmt*)?
-
+ = select:(SelectStmt*)?  join:(JoinStmt*)? where:(WhereStmt*)? andOr:(AndOrStmt*)?
+  { 
+    let resultArray = [];
+    select.forEach((select) =>{
+      resultArray = resultArray.concat(select);
+    });
+    join.forEach((join) =>{
+      resultArray = resultArray.concat(join);
+    });
+    where.forEach((where) =>{
+      resultArray = resultArray.concat(where);
+    });
+    andOr.forEach((andOr) =>{
+      resultArray = resultArray.concat(andOr);
+    });
+    return resultArray;
+  }
 
 /* Statements */
 AndOrStmt
@@ -26,12 +41,11 @@ AndOrStmt
   / AndStmt
   
 SelectStmt
-  = _ SelectToken
+  = _ SelectToken  	
     _ x:SelectField xs:SelectFieldRest*
     _ FromToken
     _ from:Identifier
-     {
-     
+     {     
     return {    
       type: "SELECT",
       columns: [x].concat(xs),      
@@ -68,10 +82,22 @@ SelectStmt
   
   AsStmt = 
   	_ AsToken 
-    _ x:SelectField  {
+    _ x2:SelectField  {
     return {
-    type: "AS",
-      newColumn: [x]
+    type: "AS",      
+      column2: [x2]
+    };
+  }
+  
+  AggregatStmt = 
+  	_ x1:AggregatToken 
+    _ "("
+    _ x2:SelectField
+    _ ")"{
+    return {
+    type: "AGGREGAT",
+     aggregat: [x1],
+      column: [x2]
     };
   }
   
@@ -92,6 +118,14 @@ JoinStmt =
     column2: [x3]
       };
   }
+
+SelectField "select valid field"
+  = (
+  AggregatStmt 
+  / Identifier AsStmt
+  / Identifier 
+  / "*") 
+  
   
 /* Tokens */
 JoinToken
@@ -119,11 +153,11 @@ OrToken
 
 AndToken
   = "AND"i !IdentRest
-  
-SelectField "select valid field"
-  = Identifier AsStmt
-  / Identifier 
-  / "*" 
+
+AggregatToken
+ = "MIN"i / "MAX"i / "AVG"i / "COUNT"i / "SUM"i
+ 
+
 
 SelectFieldJoin
   = !Reserved Identifier
@@ -159,7 +193,8 @@ Operator
 
 Identifier "identifier"
   = x:IdentStart xs:IdentRest* {
-    return Sql.listToString(x, xs);
+    return text(x.concat(xs))
+    //return Sql.listToString(x, xs);
   }
 IdentifierJoin
   = _ x:IdentStart xs:IdentRest* {
