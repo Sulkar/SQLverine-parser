@@ -3,8 +3,8 @@
 - start: `npm run start`
 - build: `npm run build`
 
-This project is based on the SQL parser extracted from [flora-sql-parser](https://github.com/godmodelabs/flora-sql-parser) module.
+This project uses the simple JavaScript parser [peggy.js/peg.js](https://github.com/peggyjs/peggy) to parse custom SQLverine statements.
 
 ## Links
-- [sqlite parser](https://github.com/codeschool/sqlite-parser)
-- [node-sql-parser](https://github.com/taozhi8833998/node-sql-parser)
+- [SQLverine](https://github.com/Sulkar/SQLverine)
+- [peggy.js online](https://peggyjs.org/online)
