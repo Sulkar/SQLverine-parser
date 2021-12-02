@@ -10,7 +10,9 @@ WHERE schueler.id < '55' AND schueler.vorname LIKE 'Ri%'
 */
 
 Start
- = select:(SelectStmt*)?  join:(JoinStmt*)? where:(WhereStmt*)? andOr:(AndOrStmt*)? orderBy:(OrderByStmt*)?
+ = select:(SelectStmt*)?  join:(JoinStmt*)? where:(WhereStmt*)? andOr:(AndOrStmt*)? groupBy:(GroupByStmt*)? 
+ 	orderBy:(OrderByStmt*)?
+ 	
   { 
     let resultArray = [];
     select.forEach((select) =>{
@@ -28,6 +30,9 @@ Start
     orderBy.forEach((orderBy) =>{
       resultArray = resultArray.concat(orderBy);
     });
+    groupBy.forEach((groupBy) =>{
+      resultArray = resultArray.concat(groupBy);
+    });
     return resultArray;
   }
 
@@ -37,9 +42,9 @@ AndOrStmt
   / AndStmt
   
 SelectStmt
-  = _ SelectToken  	
+  = _ "SELECT"i  	
     _ x:SelectField xs:SelectFieldRest*
-    _ FromToken
+    _ "FROM"i
     _ from:Identifier
      {     
     return {    
@@ -50,7 +55,7 @@ SelectStmt
   }
   
   WhereStmt = 
-  	_ WhereToken 
+  	_ "WHERE"i
     _ x:(LogicExprIn / LogicExprBetween / LogicExpr) {
     return {
     type: "WHERE",
@@ -59,7 +64,7 @@ SelectStmt
   }
   
    OrStmt = 
-  	_ OrToken
+  	_ "OR"i
    	_ x:(LogicExprIn / LogicExprBetween / LogicExpr) {
     return {
     type: "OR",
@@ -68,7 +73,7 @@ SelectStmt
   }
   
   AndStmt = 
-  	_ AndToken
+  	_ "AND"i
     _ x:(LogicExprIn / LogicExprBetween / LogicExpr) {
     return {
     type: "AND",
@@ -77,17 +82,27 @@ SelectStmt
   }
   
   AsStmt = 
-  	_ AsToken 
-    _ x2:SelectField  {
+  	_ "AS"i 
+    _ x:SelectField  {
     return {
     type: "AS",      
-      column2: [x2]
+      column: [x]
+    };
+  }
+  
+  GroupByStmt = 
+  	_ "GROUP BY" 
+    _ x1:SelectField x2:SelectFieldRest*
+    {
+    return {
+    type: "GROUP BY",      
+      column: [x1].concat(x2)
     };
   }
   
   OrderByStmt = 
   	_ "ORDER BY" 
-    _ x1:SelectFieldOrderBy x2:SelectFieldOrderByRest* // ___, ___, ___
+    _ x1:SelectFieldOrderBy x2:SelectFieldOrderByRest*
     {
     return {
     type: "ORDER BY",      
@@ -110,7 +125,7 @@ SelectStmt
   }
   
   AggregatStmt = 
-  	_ x1:AggregatToken 
+  	_ x1:AggregatTokens 
     _ "("
     _ x2:SelectField
     _ ")"{
@@ -122,13 +137,13 @@ SelectStmt
   }
   
 JoinStmt = 
-  	_ JoinToken
+  	_ "JOIN"i
     _ x1:SelectField
     _ x11: SelectFieldJoin?
-    _ "ON"
+    _ "ON"i
     _ x2:SelectField 
     _ "="
-    _ _ x3:SelectField
+    _ x3:SelectField
     {
     if(x11 != null) x1 = x1.concat(x11).replace(","," ");
     return {
@@ -158,26 +173,15 @@ SelectField "select valid SelectField"
   / "*") 
 
 SelectFieldJoin = !Reserved Identifier / "*" 
-SelectFieldRest = _ SeparatorToken _ s:SelectField {
+SelectFieldRest = _ "," _ s:SelectField {
 	return s;
 }
-SelectFieldOrderByRest = _ SeparatorToken _ s:SelectFieldOrderBy {
+SelectFieldOrderByRest = _ "," _ s:SelectFieldOrderBy {
 	return s;
 }
 
 /* Tokens */
-JoinToken = "JOIN"i !IdentRest
-SelectToken = "SELECT"i !IdentRest
-AsToken = "AS"i !IdentRest
-SeparatorToken = ","
-FromToken = "FROM"i !IdentRest
-WhereToken = "WHERE"i !IdentRest
-LikeToken = "LIKE"i !IdentRest
-BetweenToken = "BETWEEN"i !IdentRest
-InToken = "IN"i !IdentRest
-OrToken = "OR"i !IdentRest
-AndToken = "AND"i !IdentRest
-AggregatToken = "MIN"i / "MAX"i / "AVG"i / "COUNT"i / "SUM"i
+AggregatTokens = "MIN"i / "MAX"i / "AVG"i / "COUNT"i / "SUM"i
 
 
 
@@ -198,7 +202,7 @@ LogicExprBetween
   = _ "(" _ x:LogicExpr  _ ")" _ {
     return [x];
   }
-  / _ left:Expr _ op:"BETWEEN" _ rightFrom:Expr _ "AND" _ rightTo:Expr _ {
+  / _ left:Expr _ op:"BETWEEN"i _ rightFrom:Expr _ "AND" _ rightTo:Expr _ {
     return {
       left: left,
       op: op,
@@ -226,9 +230,9 @@ Operator
   / "<="        { return "<="; }
   / ">="        { return ">="; }
   / "="        { return "="; }
-  / LikeToken  { return "LIKE"; }
-  / BetweenToken  { return "BETWEEN"; }
-  / InToken  { return "IN"; }
+  / "LIKE"i  { return "LIKE"; }
+  / "BETWEEN"i  { return "BETWEEN"; }
+  / "IN"i  { return "IN"; }
 
 
 
