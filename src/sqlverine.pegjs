@@ -10,7 +10,7 @@ WHERE schueler.id < '55' AND schueler.vorname LIKE 'Ri%'
 */
 
 Start
- = select:(SelectStmt*)?  join:(JoinStmt*)? where:(WhereStmt*)? andOr:(AndOrStmt*)?
+ = select:(SelectStmt*)?  join:(JoinStmt*)? where:(WhereStmt*)? andOr:(AndOrStmt*)? orderBy:(OrderByStmt*)?
   { 
     let resultArray = [];
     select.forEach((select) =>{
@@ -24,6 +24,9 @@ Start
     });
     andOr.forEach((andOr) =>{
       resultArray = resultArray.concat(andOr);
+    });
+    orderBy.forEach((orderBy) =>{
+      resultArray = resultArray.concat(orderBy);
     });
     return resultArray;
   }
@@ -82,6 +85,30 @@ SelectStmt
     };
   }
   
+  OrderByStmt = 
+  	_ "ORDER BY" 
+    _ x1:SelectFieldOrderBy x2:SelectFieldOrderByRest* // ___, ___, ___
+    {
+    return {
+    type: "ORDER BY",      
+      column: [x1].concat(x2)
+    };
+  }
+  
+  AscStmt =
+  _ "ASC" {
+    return {
+    type: "ASC"
+    };
+  }
+  
+  DescStmt =
+  _ "DESC" {
+    return {
+    type: "DESC"
+    };
+  }
+  
   AggregatStmt = 
   	_ x1:AggregatToken 
     _ "("
@@ -111,16 +138,33 @@ JoinStmt =
     column2: [x3]
       };
   }
+/* Select Fields */
+SelectFieldOrderBy "select valid SelectFieldOrderBy"
+  = (
+  AggregatStmt AscStmt
+  / AggregatStmt DescStmt
+  / AggregatStmt 
+  / Identifier AscStmt
+  / Identifier DescStmt
+  / Identifier 
+  / "*") 
 
-SelectField "select valid field"
+SelectField "select valid SelectField"
   = (
   AggregatStmt AsStmt
   / AggregatStmt 
   / Identifier AsStmt
   / Identifier 
   / "*") 
-  
-  
+
+SelectFieldJoin = !Reserved Identifier / "*" 
+SelectFieldRest = _ SeparatorToken _ s:SelectField {
+	return s;
+}
+SelectFieldOrderByRest = _ SeparatorToken _ s:SelectFieldOrderBy {
+	return s;
+}
+
 /* Tokens */
 JoinToken = "JOIN"i !IdentRest
 SelectToken = "SELECT"i !IdentRest
@@ -136,10 +180,7 @@ AndToken = "AND"i !IdentRest
 AggregatToken = "MIN"i / "MAX"i / "AVG"i / "COUNT"i / "SUM"i
 
 
-SelectFieldJoin = !Reserved Identifier / "*" 
-SelectFieldRest = _ SeparatorToken _ s:SelectField {
-	return s;
-}
+
 
 LogicExpr
   = _ "(" _ x:LogicExpr  _ ")" _ {
