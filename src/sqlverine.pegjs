@@ -8,13 +8,6 @@ JOIN klassen ON klassen.id = schueler.klasse_id
 WHERE schueler.id < '55' AND schueler.vorname LIKE 'Ri%'
 
 */
-{
-  var Sql = {
-    listToString: function(x, xs) {
-      return [x].concat(xs).join("");
-    }
-  };
-}
 
 Start
  = select:(SelectStmt*)?  join:(JoinStmt*)? where:(WhereStmt*)? andOr:(AndOrStmt*)?
@@ -55,7 +48,7 @@ SelectStmt
   
   WhereStmt = 
   	_ WhereToken 
-    _ x:LogicExpr  {
+    _ x:(LogicExprIn / LogicExprBetween / LogicExpr) {
     return {
     type: "WHERE",
       conditions: [x]
@@ -64,7 +57,7 @@ SelectStmt
   
    OrStmt = 
   	_ OrToken
-    _ x:LogicExpr  {
+   	_ x:(LogicExprIn / LogicExprBetween /LogicExpr)  {
     return {
     type: "OR",
       conditions: [x]
@@ -73,7 +66,7 @@ SelectStmt
   
   AndStmt = 
   	_ AndToken
-    _ x:LogicExpr  {
+    _ x:(LogicExprIn / LogicExprBetween /LogicExpr)  {
     return {
     type: "AND",
       conditions: [x]
@@ -128,45 +121,24 @@ SelectField "select valid field"
   
   
 /* Tokens */
-JoinToken
- = "JOIN"i !IdentRest
-SelectToken
-  = "SELECT"i !IdentRest
-
-AsToken
-  = "AS"i !IdentRest
-  
-SeparatorToken
-  = ","
-
-FromToken
-  = "FROM"i !IdentRest
-
-WhereToken
-  = "WHERE"i !IdentRest
-
-LikeToken
-  = "LIKE"i !IdentRest
-
-OrToken
-  = "OR"i !IdentRest
-
-AndToken
-  = "AND"i !IdentRest
-
-AggregatToken
- = "MIN"i / "MAX"i / "AVG"i / "COUNT"i / "SUM"i
- 
+JoinToken = "JOIN"i !IdentRest
+SelectToken = "SELECT"i !IdentRest
+AsToken = "AS"i !IdentRest
+SeparatorToken = ","
+FromToken = "FROM"i !IdentRest
+WhereToken = "WHERE"i !IdentRest
+LikeToken = "LIKE"i !IdentRest
+BetweenToken = "BETWEEN"i !IdentRest
+InToken = "IN"i !IdentRest
+OrToken = "OR"i !IdentRest
+AndToken = "AND"i !IdentRest
+AggregatToken = "MIN"i / "MAX"i / "AVG"i / "COUNT"i / "SUM"i
 
 
-SelectFieldJoin
-  = !Reserved Identifier
-  / "*" 
-
-SelectFieldRest
-  = _ SeparatorToken _ s:SelectField {
-    return s;
-  }
+SelectFieldJoin = !Reserved Identifier / "*" 
+SelectFieldRest = _ SeparatorToken _ s:SelectField {
+	return s;
+}
 
 LogicExpr
   = _ "(" _ x:LogicExpr  _ ")" _ {
@@ -179,12 +151,42 @@ LogicExpr
       right: right
     };
   }
+  
+LogicExprBetween
+  = _ "(" _ x:LogicExpr  _ ")" _ {
+    return [x];
+  }
+  / _ left:Expr _ op:Operator _ rightFrom:Expr _ "AND" _ rightTo:Expr _ {
+    return {
+      left: left,
+      op: op,
+      rightFrom: rightFrom,
+      rightTo: rightTo
+    };
+  }
+  
+LogicExprIn
+  = _ "(" _ x:LogicExpr  _ ")" _ {
+    return [x];
+  }
+  / _ left:Expr _ op:Operator _ "(" _ right:SelectField rightN:SelectFieldRest* _ ")" {   
+    return {
+      left: left,
+      op: op,
+      right:[right].concat(rightN)
+    };
+  }
 
 Operator
   = "<>"       { return "<>"; }
-  / "<"        { return "<";     }
-  / "="        { return "=";     }
-  / LikeToken  { return "LIKE";      }
+  / "<"        { return "<"; }
+  / ">"        { return ">"; }
+  / "<="        { return "<="; }
+  / ">="        { return ">="; }
+  / "="        { return "="; }
+  / LikeToken  { return "LIKE"; }
+  / BetweenToken  { return "BETWEEN"; }
+  / InToken  { return "IN"; }
 
 
 
@@ -194,17 +196,16 @@ Operator
 Identifier "identifier"
   = x:IdentStart xs:IdentRest* {
     return text(x.concat(xs))
-    //return Sql.listToString(x, xs);
   }
 IdentifierJoin
   = _ x:IdentStart xs:IdentRest* {
-    return Sql.listToString(x, xs);
+    return text(x.concat(xs))
   }
 IdentStart
   = [''a-z_%]i
 
 IdentRest
-  = [''a-z0-9_.%]i
+  = [''a-z0-9_.%*]i
 
 /* Expressions */
 
