@@ -57,7 +57,7 @@ SelectStmt
   
    OrStmt = 
   	_ OrToken
-   	_ x:(LogicExprIn / LogicExprBetween /LogicExpr)  {
+   	_ x:(LogicExprIn / LogicExprBetween / LogicExpr) {
     return {
     type: "OR",
       conditions: [x]
@@ -66,7 +66,7 @@ SelectStmt
   
   AndStmt = 
   	_ AndToken
-    _ x:(LogicExprIn / LogicExprBetween /LogicExpr)  {
+    _ x:(LogicExprIn / LogicExprBetween / LogicExpr) {
     return {
     type: "AND",
       conditions: [x]
@@ -114,7 +114,8 @@ JoinStmt =
 
 SelectField "select valid field"
   = (
-  AggregatStmt 
+  AggregatStmt AsStmt
+  / AggregatStmt 
   / Identifier AsStmt
   / Identifier 
   / "*") 
@@ -156,7 +157,7 @@ LogicExprBetween
   = _ "(" _ x:LogicExpr  _ ")" _ {
     return [x];
   }
-  / _ left:Expr _ op:Operator _ rightFrom:Expr _ "AND" _ rightTo:Expr _ {
+  / _ left:Expr _ op:"BETWEEN" _ rightFrom:Expr _ "AND" _ rightTo:Expr _ {
     return {
       left: left,
       op: op,
