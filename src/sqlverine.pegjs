@@ -11,7 +11,7 @@ WHERE schueler.id < '55' AND schueler.vorname LIKE 'Ri%'
 
 Start
  = select:(SelectStmt*)?  join:(JoinStmt*)? where:(WhereStmt*)? andOr:(AndOrStmt*)? groupBy:(GroupByStmt*)? 
- 	orderBy:(OrderByStmt*)?
+ 	orderBy:(OrderByStmt*)? limit:(LimitStmt*)? offset:(OffsetStmt*)?
  	
   { 
     let resultArray = [];
@@ -32,6 +32,12 @@ Start
     });
     groupBy.forEach((groupBy) =>{
       resultArray = resultArray.concat(groupBy);
+    });
+    limit.forEach((limit) =>{
+      resultArray = resultArray.concat(limit);
+    });
+     offset.forEach((offset) =>{
+      resultArray = resultArray.concat(offset);
     });
     return resultArray;
   }
@@ -86,12 +92,12 @@ SelectStmt
     _ x:SelectField  {
     return {
     type: "AS",      
-      column: [x]
+      column: x
     };
   }
   
   GroupByStmt = 
-  	_ "GROUP BY" 
+  	_ "GROUP BY"i 
     _ x1:SelectField x2:SelectFieldRest*
     {
     return {
@@ -101,7 +107,7 @@ SelectStmt
   }
   
   OrderByStmt = 
-  	_ "ORDER BY" 
+  	_ "ORDER BY"i 
     _ x1:SelectFieldOrderBy x2:SelectFieldOrderByRest*
     {
     return {
@@ -111,16 +117,35 @@ SelectStmt
   }
   
   AscStmt =
-  _ "ASC" {
+  _ "ASC"i {
     return {
     type: "ASC"
     };
   }
   
   DescStmt =
-  _ "DESC" {
+  _ "DESC"i {
     return {
     type: "DESC"
+    };
+  }
+  
+  LimitStmt = 
+  	_ "LIMIT"i 
+    _ x1:SelectField
+    {
+    return {
+    type: "LIMIT",      
+      value: x1
+    };
+  }
+  OffsetStmt = 
+  	_ "OFFSET"i 
+    _ x1:SelectField
+    {
+    return {
+    type: "OFFSET",      
+      value: x1
     };
   }
   
@@ -131,8 +156,8 @@ SelectStmt
     _ ")"{
     return {
     type: "AGGREGAT",
-     aggregat: [x1],
-      column: [x2]
+     aggregat: x1,
+      column: x2
     };
   }
   
@@ -148,9 +173,9 @@ JoinStmt =
     if(x11 != null) x1 = x1.concat(x11).replace(","," ");
     return {
     type: "JOIN",
-    table: [x1], 
-    column1: [x2],
-    column2: [x3]
+    table: x1, 
+    column1: x2,
+    column2: x3
       };
   }
 /* Select Fields */
@@ -248,7 +273,7 @@ IdentifierJoin
     return text(x.concat(xs))
   }
 IdentStart
-  = [''a-z_%]i
+  = [''a-z0-9_%]i
 
 IdentRest
   = [''a-z0-9_.%*]i
