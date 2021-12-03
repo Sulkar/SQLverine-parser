@@ -10,7 +10,7 @@ const outputDiv = document.querySelector('#sqlParserOutputHTML');
 
 
 //tests
-inputTextarea.value = "SELECT name FROM schueler WHERE id = 5 AND name = 'Richi'";
+inputTextarea.value = "SELECT id, vorname AS 'Rufname', MAX(geburtsdatum) FROM schueler";
 
 //parse Textarea nach DIV
 document.querySelector('#btnParse').addEventListener("click", function () {
@@ -44,13 +44,18 @@ function createSelect(selectAst){
   let from = selectAst.from;
   let columns = selectAst.columns;
   columns.forEach(column => {
-    if(Array.isArray(column)){
-      //es ist ein column mit AS ___
-      console.log("Column old: " + column[0]);
-      console.log("Column new: " + column[1].column);
-    }else{
-      console.log("Column: " + column);
-    }
-    
+
+    column.forEach((item, index) =>{
+      if(item.type == "COLUMN"){
+        console.log("Column: " + item.column);
+      }else if(item.type == "AS"){
+        console.log("AS new column: " + item.columns.column);
+      }else if(item.type == "AGGREGAT"){
+        console.log("Aggregat: " + item.aggregat);
+        console.log("Aggregat Column: " + item.columns.column);
+      }
+    });
+
   });
+  console.log("Table: " + from.column);
 }

@@ -113,7 +113,7 @@ SelectStmt
     _ x:Identifier  {
     return {
     type: "AS",      
-      column: x
+      columns: x
     };
   }
   
@@ -123,7 +123,7 @@ SelectStmt
     {
     return {
     type: "GROUP BY",      
-      column: [x1].concat(x2)
+      columns: [x1].concat(x2)
     };
   }
   
@@ -133,7 +133,7 @@ SelectStmt
     {
     return {
     type: "ORDER BY",      
-      column: [x1].concat(x2)
+      columns: [x1].concat(x2)
     };
   }
   
@@ -178,21 +178,22 @@ SelectStmt
     return {
     type: "AGGREGAT",
      aggregat: x1,
-      column: x2
+      columns: x2
     };
   }
   
 JoinStmt = 
   	_ "JOIN"i
     _ x1:Identifier
-    _ x11: (!"ON" Identifier)?
+    _ x11: (!"ON"i Identifier)?
     _ "ON"i
     _ x2:Identifier 
     _ "="
     _ x3:Identifier
     {
-    if(x11 != null) x1 = x1.concat(x11).replace(","," ");
+    if(x11 != null) x1 = [x1].concat(x11[1]); // [0] = undefined, [1] = Identifier
     return {
+   
     type: "JOIN",
     table: x1, 
     column1: x2,
@@ -203,9 +204,9 @@ JoinStmt =
 SelectField "select valid SelectField"
   = (
   AggregatStmt AsStmt
-  / AggregatStmt 
+  / AggregatStmt+
   / Identifier AsStmt
-  / Identifier 
+  / Identifier+
   / "*") 
   
 SelectFieldOrderBy "select valid SelectFieldOrderBy"
@@ -216,7 +217,7 @@ SelectFieldOrderBy "select valid SelectFieldOrderBy"
   / Identifier AscStmt
   / Identifier DescStmt
   / Identifier 
-  / "*") 
+  ) 
 
 
 
@@ -281,14 +282,17 @@ Operator
 /* Identifier */
 Identifier "identifier"
   = x:IdentStart xs:IdentRest* {
-    return text(x.concat(xs))
+    return {
+    type:"COLUMN",
+    column:text(x.concat(xs))
+    }
 }
 IdentifierRest = _ "," _ s:Identifier {
 	return s;
 }
 
 
-IdentStart = [''a-z0-9_%]i
+IdentStart = [''a-z0-9_%*]i
 IdentRest = [''a-z0-9_.%*]i
 
 /* Skip */
