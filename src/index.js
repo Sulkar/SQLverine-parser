@@ -15,7 +15,7 @@ inputTextarea.value = "SELECT name FROM schueler WHERE id = 5 AND name = 'Richi'
 //parse Textarea nach DIV
 document.querySelector('#btnParse').addEventListener("click", function () {
     //Zu parsender String wird aus der Textarea kopiert.
-    let zuParsenderString = inputTextarea.value;
+    let zuParsenderString = inputTextarea.value.trim();
     //Ein AST Objekt wird mit Hilfe des PEG.js Parsers erstellt
     let outputAST = parse(zuParsenderString);
     //Das AST Objekt wird in eine formatierte Zeichenkette umgewandelt und in einer Textarea angezeigt.
