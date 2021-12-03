@@ -24,5 +24,33 @@ document.querySelector('#btnParse').addEventListener("click", function () {
     console.log(outputAST);
 
     //TODO: AST Objekt in SQLverine Codeblöcke umwandeln
-
+    checkAst(outputAST)
 });
+
+
+function checkAst(ast){
+  ast.forEach(element => {
+    if(element.type == "SELECT"){
+      createSelect(element);
+    }else if(element.type == "WHERE"){
+      console.log("createWhere");
+    } //...
+
+  });
+
+}
+
+function createSelect(selectAst){
+  let from = selectAst.from;
+  let columns = selectAst.columns;
+  columns.forEach(column => {
+    if(Array.isArray(column)){
+      //es ist ein column mit AS ___
+      console.log("Column old: " + column[0]);
+      console.log("Column new: " + column[1].column);
+    }else{
+      console.log("Column: " + column);
+    }
+    
+  });
+}

@@ -1,4 +1,12 @@
-
+{
+	//functions:
+  	function checkBrackets(bracket){
+  		if(bracket == ("(" || ")")) return true;
+        else return false;
+	}
+} 
+  
+  
 Start
  = select:(SelectStmt*)?  join:(JoinStmt*)? where:(WhereStmt*)? andOr:(AndOrStmt*)? groupBy:(GroupByStmt*)? 
  	orderBy:(OrderByStmt*)? limit:(LimitStmt*)? offset:(OffsetStmt*)?
@@ -56,6 +64,8 @@ SelectStmt
     _ x2:(LogicExprIn / LogicExprBetween / LogicExpr)
     _ x3:")"?
     {
+    x1 = checkBrackets(x1);
+    x3 = checkBrackets(x3);
     return {
     type: "WHERE",
       leftBracket: x1,
@@ -70,6 +80,8 @@ SelectStmt
    	_ x2:(LogicExprIn / LogicExprBetween / LogicExpr)
     _ x3:")"?
     {
+    x1 = checkBrackets(x1);
+    x3 = checkBrackets(x3);
     return {
     type: "OR",
       leftBracket: x1,
@@ -78,12 +90,16 @@ SelectStmt
     };
   }
   
+  
+  
   AndStmt = 
   	_ "AND"i
     _ x1:"("?
     _ x2:(LogicExprIn / LogicExprBetween / LogicExpr)
     _ x3:")"?
     {
+    x1 = checkBrackets(x1);
+    x3 = checkBrackets(x3);
     return {
     type: "AND",
       leftBracket: x1,
@@ -94,7 +110,7 @@ SelectStmt
   
   AsStmt = 
   	_ "AS"i 
-    _ x:SelectField  {
+    _ x:Identifier  {
     return {
     type: "AS",      
       column: x
@@ -137,7 +153,7 @@ SelectStmt
   
   LimitStmt = 
   	_ "LIMIT"i 
-    _ x1:SelectField
+    _ x1:Identifier
     {
     return {
     type: "LIMIT",      
@@ -146,7 +162,7 @@ SelectStmt
   }
   OffsetStmt = 
   	_ "OFFSET"i 
-    _ x1:SelectField
+    _ x1:Identifier
     {
     return {
     type: "OFFSET",      
@@ -157,7 +173,7 @@ SelectStmt
   AggregatStmt = 
   	_ x1:AggregatTokens 
     _ "("
-    _ x2:SelectField
+    _ x2:Identifier
     _ ")"{
     return {
     type: "AGGREGAT",
@@ -168,12 +184,12 @@ SelectStmt
   
 JoinStmt = 
   	_ "JOIN"i
-    _ x1:SelectField
-    _ x11: (!"ON" SelectField)?
+    _ x1:Identifier
+    _ x11: (!"ON" Identifier)?
     _ "ON"i
-    _ x2:SelectField 
+    _ x2:Identifier 
     _ "="
-    _ x3:SelectField
+    _ x3:Identifier
     {
     if(x11 != null) x1 = x1.concat(x11).replace(","," ");
     return {
@@ -184,6 +200,14 @@ JoinStmt =
       };
   }
 /* Select Fields */
+SelectField "select valid SelectField"
+  = (
+  AggregatStmt AsStmt
+  / AggregatStmt 
+  / Identifier AsStmt
+  / Identifier 
+  / "*") 
+  
 SelectFieldOrderBy "select valid SelectFieldOrderBy"
   = (
   AggregatStmt AscStmt
@@ -194,13 +218,7 @@ SelectFieldOrderBy "select valid SelectFieldOrderBy"
   / Identifier 
   / "*") 
 
-SelectField "select valid SelectField"
-  = (
-  AggregatStmt AsStmt
-  / AggregatStmt 
-  / Identifier AsStmt
-  / Identifier 
-  / "*") 
+
 
 SelectFieldRest = _ "," _ s:SelectField {
 	return s;
@@ -216,7 +234,7 @@ LogicExpr
   = _ "(" _ x:LogicExpr  _ ")" _ {
     return [x];
   }
-  / _ left:SelectField _ op:Operator _ right:SelectField _ {
+  / _ left:Identifier _ op:Operator _ right:Identifier _ {
     return {
       left: left,
       op: op,
@@ -228,7 +246,7 @@ LogicExprBetween
   = _ "(" _ x:LogicExpr  _ ")" _ {
     return [x];
   }
-  / _ left:SelectField _ op:"BETWEEN"i _ rightFrom:SelectField _ "AND" _ rightTo:SelectField _ {
+  / _ left:Identifier _ op:"BETWEEN"i _ rightFrom:Identifier _ "AND" _ rightTo:Identifier _ {
     return {
       left: left,
       op: op,
@@ -241,7 +259,7 @@ LogicExprIn
   = _ "(" _ x:LogicExpr  _ ")" _ {
     return [x];
   }
-  / _ left:SelectField _ op:Operator _ "(" _ right:SelectField rightN:SelectFieldRest* _ ")" {   
+  / _ left:Identifier _ op:Operator _ "(" _ right:Identifier rightN:IdentifierRest* _ ")" {   
     return {
       left: left,
       op: op,
@@ -264,7 +282,11 @@ Operator
 Identifier "identifier"
   = x:IdentStart xs:IdentRest* {
     return text(x.concat(xs))
-  }
+}
+IdentifierRest = _ "," _ s:Identifier {
+	return s;
+}
+
 
 IdentStart = [''a-z0-9_%]i
 IdentRest = [''a-z0-9_.%*]i
