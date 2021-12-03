@@ -1,13 +1,3 @@
-// PEG.JS https://pegjs.org/online
-// Test: https://jsoneditoronline.org/
-/*
-Testcode:
-
-SELECT schueler.vorname AS 'Rufname', schueler.geburtsdatum FROM schueler
-JOIN klassen ON klassen.id = schueler.klasse_id
-WHERE schueler.id < '55' AND schueler.vorname LIKE 'Ri%'
-
-*/
 
 Start
  = select:(SelectStmt*)?  join:(JoinStmt*)? where:(WhereStmt*)? andOr:(AndOrStmt*)? groupBy:(GroupByStmt*)? 
@@ -62,28 +52,43 @@ SelectStmt
   
   WhereStmt = 
   	_ "WHERE"i
-    _ x:(LogicExprIn / LogicExprBetween / LogicExpr) {
+    _ x1:"("?
+    _ x2:(LogicExprIn / LogicExprBetween / LogicExpr)
+    _ x3:")"?
+    {
     return {
     type: "WHERE",
-      conditions: [x]
+      leftBracket: x1,
+      rightBracket: x3,
+      conditions: [x2]
     };
   }
   
    OrStmt = 
   	_ "OR"i
-   	_ x:(LogicExprIn / LogicExprBetween / LogicExpr) {
+    _ x1:"("?
+   	_ x2:(LogicExprIn / LogicExprBetween / LogicExpr)
+    _ x3:")"?
+    {
     return {
     type: "OR",
-      conditions: [x]
+      leftBracket: x1,
+      rightBracket: x3,
+      conditions: [x2]
     };
   }
   
   AndStmt = 
   	_ "AND"i
-    _ x:(LogicExprIn / LogicExprBetween / LogicExpr) {
+    _ x1:"("?
+    _ x2:(LogicExprIn / LogicExprBetween / LogicExpr)
+    _ x3:")"?
+    {
     return {
     type: "AND",
-      conditions: [x]
+      leftBracket: x1,
+      rightBracket: x3,
+      conditions: [x2]
     };
   }
   
@@ -164,7 +169,7 @@ SelectStmt
 JoinStmt = 
   	_ "JOIN"i
     _ x1:SelectField
-    _ x11: SelectFieldJoin?
+    _ x11: (!"ON" SelectField)?
     _ "ON"i
     _ x2:SelectField 
     _ "="
@@ -197,7 +202,6 @@ SelectField "select valid SelectField"
   / Identifier 
   / "*") 
 
-SelectFieldJoin = !Reserved Identifier / "*" 
 SelectFieldRest = _ "," _ s:SelectField {
 	return s;
 }
@@ -208,14 +212,11 @@ SelectFieldOrderByRest = _ "," _ s:SelectFieldOrderBy {
 /* Tokens */
 AggregatTokens = "MIN"i / "MAX"i / "AVG"i / "COUNT"i / "SUM"i
 
-
-
-
 LogicExpr
   = _ "(" _ x:LogicExpr  _ ")" _ {
     return [x];
   }
-  / _ left:Expr _ op:Operator _ right:Expr _ {
+  / _ left:SelectField _ op:Operator _ right:SelectField _ {
     return {
       left: left,
       op: op,
@@ -227,7 +228,7 @@ LogicExprBetween
   = _ "(" _ x:LogicExpr  _ ")" _ {
     return [x];
   }
-  / _ left:Expr _ op:"BETWEEN"i _ rightFrom:Expr _ "AND" _ rightTo:Expr _ {
+  / _ left:SelectField _ op:"BETWEEN"i _ rightFrom:SelectField _ "AND" _ rightTo:SelectField _ {
     return {
       left: left,
       op: op,
@@ -240,7 +241,7 @@ LogicExprIn
   = _ "(" _ x:LogicExpr  _ ")" _ {
     return [x];
   }
-  / _ left:Expr _ op:Operator _ "(" _ right:SelectField rightN:SelectFieldRest* _ ")" {   
+  / _ left:SelectField _ op:Operator _ "(" _ right:SelectField rightN:SelectFieldRest* _ ")" {   
     return {
       left: left,
       op: op,
@@ -259,72 +260,16 @@ Operator
   / "BETWEEN"i  { return "BETWEEN"; }
   / "IN"i  { return "IN"; }
 
-
-
-
 /* Identifier */
-
 Identifier "identifier"
   = x:IdentStart xs:IdentRest* {
     return text(x.concat(xs))
   }
-IdentifierJoin
-  = _ x:IdentStart xs:IdentRest* {
-    return text(x.concat(xs))
-  }
-IdentStart
-  = [''a-z0-9_%]i
 
-IdentRest
-  = [''a-z0-9_.%*]i
-
-/* Expressions */
-
-Expr
-  = Float
-  / Integer
-  / Identifier
-  / String
-
-Integer "integer"
-  = n:[0-9]+ {
-    return parseInt(n.join(""));
-  }
-
-Float "float"
-  = left:Integer "." right:Integer {
-    return parseFloat([
-      left.toString(),
-      right.toString()
-    ].join("."));
-  }
-
-String "string"
-  = "'" str:ValidStringChar* "'" {
-    return str.join("");
-  }
-
-ValidStringChar
-  = !"'" c:. {
-    return c;
-  }
-
+IdentStart = [''a-z0-9_%]i
+IdentRest = [''a-z0-9_.%*]i
 
 /* Skip */
-Reserved
- = "ON"
-_
-  = ( WhiteSpace / NewLine )*
-
-NewLine "newline"
-  = "\r\n"
-  / "\r"
-  / "\n"
-  / "\u2028"
-  / "\u2029"
-
-WhiteSpace "whitespace"
-  = " "
-  / "\t"
-  / "\v"
-  / "\f"
+_ = ( WhiteSpace / NewLine )*
+NewLine "newline" = "\n"
+WhiteSpace "whitespace"  = " "
