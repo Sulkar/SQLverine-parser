@@ -1,5 +1,7 @@
 # SQLverine-parser
 
+<img src="src/images/parser1.png" width="400px" />
+
 - start: `npm run start`
 - build: `npm run build`
 
