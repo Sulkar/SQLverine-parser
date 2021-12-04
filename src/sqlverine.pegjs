@@ -181,7 +181,19 @@ SelectStmt
       columns: x2
     };
   }
-  
+   
+  StringFunctionStmt = 
+  	_ x1:StringFunctionTokens 
+    _ "("
+    _ x2:Identifier x3:IdentifierRest*
+    _ ")"{
+    return {
+    type: "STRING_FUNCTION",
+      string_function: x1,
+      columns: [x2].concat(x3)
+    };
+  }
+
 JoinStmt = 
   	_ "JOIN"i
     _ x1:Identifier
@@ -203,23 +215,17 @@ JoinStmt =
 /* Select Fields */
 SelectField "select valid SelectField"
   = (
-  AggregatStmt AsStmt
-  / AggregatStmt+
-  / Identifier AsStmt
-  / Identifier+
+  AggregatStmt AsStmt / AggregatStmt+
+  / StringFunctionStmt AsStmt / StringFunctionStmt+
+  / Identifier AsStmt / Identifier+
   / "*") 
   
 OrderByField "select valid OrderByField"
   = (
-  AggregatStmt AscStmt
-  / AggregatStmt DescStmt
-  / AggregatStmt 
-  / Identifier AscStmt
-  / Identifier DescStmt
-  / Identifier 
+  AggregatStmt AscStmt / AggregatStmt DescStmt/ AggregatStmt
+  / StringFunctionStmt AscStmt / StringFunctionStmt DescStmt / StringFunctionStmt
+  / Identifier AscStmt / Identifier DescStmt / Identifier 
   ) 
-
-
 
 SelectFieldRest = _ "," _ s:SelectField {
 	return s;
@@ -231,10 +237,7 @@ OrderByFieldRest = _ "," _ s:OrderByField {
 
 /* Operators */
 LogicExpr
-  = _ "(" _ x:LogicExpr  _ ")" _ {
-    return [x];
-  }
-  / _ left:Identifier _ op:Operator _ right:Identifier _ {
+  = _ left:Identifier _ op:Operator _ right:Identifier _ {
     return {
       left: left,
       op: op,
@@ -243,10 +246,7 @@ LogicExpr
   }
   
 LogicExprBetween
-  = _ "(" _ x:LogicExpr  _ ")" _ {
-    return [x];
-  }
-  / _ left:Identifier _ op:"BETWEEN"i _ rightFrom:Identifier _ "AND" _ rightTo:Identifier _ {
+  = _ left:Identifier _ op:"BETWEEN"i _ rightFrom:Identifier _ "AND" _ rightTo:Identifier _ {
     return {
       left: left,
       op: op,
@@ -256,10 +256,7 @@ LogicExprBetween
   }
   
 LogicExprIn
-  = _ "(" _ x:LogicExpr  _ ")" _ {
-    return [x];
-  }
-  / _ left:Identifier _ op:"IN"i _ "(" _ right:Identifier rightN:IdentifierRest* _ ")" {   
+  = _ left:Identifier _ op:"IN"i _ "(" _ right:Identifier rightN:IdentifierRest* _ ")" {   
     return {
       left: left,
       op: op,
@@ -269,6 +266,7 @@ LogicExprIn
 
 /* Identifier */
 AggregatTokens = "MIN"i / "MAX"i / "AVG"i / "COUNT"i / "SUM"i
+StringFunctionTokens = "LENGTH"i / "UPPER"i / "LOWER"i / "SUBSTR"i / "TRIM"i / "LTRIM"i / "RTRIM"i / "REPLACE"i / "RTRIM"i / "INSTR"i
 
 Operator
   = "<>"       { return "<>"; }
@@ -279,19 +277,24 @@ Operator
   / "="        { return "="; }
   / "LIKE"i  { return "LIKE"; }
 
-Identifier "identifier"
-  = x:IdentStart xs:IdentRest* {
-    return {
-    type:"COLUMN",
-    column:text(x.concat(xs))
-    }
-}
+Identifier = Column / Input
 IdentifierRest = _ "," _ s:Identifier {
 	return s;
 }
 
-IdentStart = [''a-z0-9_%*]i
-IdentRest = [''a-z0-9_.%*]i
+Column = x:[a-z0-9_%*]i xs:[a-z0-9_.%*]i* {
+    return {
+    type:"COLUMN",
+    value:text(x.concat(xs))
+    }
+}
+Input "Input" 
+	= [''] x:[a-z0-9_%* ]i* [''] {
+    return {
+    type:"INPUT",
+    value:text(x).replaceAll("'","")
+    }
+}
 
 /* Skip */
 _ = ( WhiteSpace / NewLine )*

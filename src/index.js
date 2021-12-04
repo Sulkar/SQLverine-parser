@@ -151,15 +151,15 @@ function createSelect(selectAst) {
 
     column.forEach((item, index) => {
       if (item.type == "COLUMN") {
-        console.log("Column: " + item.column);
+        console.log("Column: " + item.value);
       } else if (item.type == "AS") {
-        console.log("AS new column: " + item.columns.column);
+        console.log("AS new column: " + item.columns.value);
       } else if (item.type == "AGGREGAT") {
         console.log("Aggregat: " + item.aggregat);
-        console.log("Aggregat Column: " + item.columns.column);
+        console.log("Aggregat Column: " + item.columns.value);
       }
     });
 
   });
-  console.log("Table: " + from.column);
+  console.log("Table: " + from.value);
 }

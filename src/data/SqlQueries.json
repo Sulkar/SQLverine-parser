@@ -32,6 +32,12 @@
         },
         {
             "query": "SELECT * FROM schueler\nWHERE id < '50' AND  ( vorname LIKE 'A%' OR vorname LIKE 'B%' )"
+        },
+        {
+            "query": "SELECT id, LENGTH(vorname) AS 'Vorname Laenge', MAX(geburtsdatum) AS max, COUNT(klasse.id), UPPER(nachname) FROM schueler"
+        },
+        {
+            "query": "SELECT LENGTH(vorname), SUBSTR(strasse,1,4) AS 'Teil von Strasse' FROM schueler"
         }
     ]},
     {
