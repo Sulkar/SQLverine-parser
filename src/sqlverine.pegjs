@@ -129,7 +129,7 @@ SelectStmt
   
   OrderByStmt = 
   	_ "ORDER BY"i 
-    _ x1:SelectFieldOrderBy x2:SelectFieldOrderByRest*
+    _ x1:OrderByField x2:OrderByFieldRest*
     {
     return {
     type: "ORDER BY",      
@@ -209,7 +209,7 @@ SelectField "select valid SelectField"
   / Identifier+
   / "*") 
   
-SelectFieldOrderBy "select valid SelectFieldOrderBy"
+OrderByField "select valid OrderByField"
   = (
   AggregatStmt AscStmt
   / AggregatStmt DescStmt
@@ -224,13 +224,12 @@ SelectFieldOrderBy "select valid SelectFieldOrderBy"
 SelectFieldRest = _ "," _ s:SelectField {
 	return s;
 }
-SelectFieldOrderByRest = _ "," _ s:SelectFieldOrderBy {
+OrderByFieldRest = _ "," _ s:OrderByField {
 	return s;
 }
 
-/* Tokens */
-AggregatTokens = "MIN"i / "MAX"i / "AVG"i / "COUNT"i / "SUM"i
 
+/* Operators */
 LogicExpr
   = _ "(" _ x:LogicExpr  _ ")" _ {
     return [x];
@@ -260,13 +259,16 @@ LogicExprIn
   = _ "(" _ x:LogicExpr  _ ")" _ {
     return [x];
   }
-  / _ left:Identifier _ op:Operator _ "(" _ right:Identifier rightN:IdentifierRest* _ ")" {   
+  / _ left:Identifier _ op:"IN"i _ "(" _ right:Identifier rightN:IdentifierRest* _ ")" {   
     return {
       left: left,
       op: op,
       right:[right].concat(rightN)
     };
   }
+
+/* Identifier */
+AggregatTokens = "MIN"i / "MAX"i / "AVG"i / "COUNT"i / "SUM"i
 
 Operator
   = "<>"       { return "<>"; }
@@ -276,10 +278,7 @@ Operator
   / ">="        { return ">="; }
   / "="        { return "="; }
   / "LIKE"i  { return "LIKE"; }
-  / "BETWEEN"i  { return "BETWEEN"; }
-  / "IN"i  { return "IN"; }
 
-/* Identifier */
 Identifier "identifier"
   = x:IdentStart xs:IdentRest* {
     return {
@@ -290,7 +289,6 @@ Identifier "identifier"
 IdentifierRest = _ "," _ s:Identifier {
 	return s;
 }
-
 
 IdentStart = [''a-z0-9_%*]i
 IdentRest = [''a-z0-9_.%*]i

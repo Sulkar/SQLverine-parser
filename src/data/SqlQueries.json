@@ -1,0 +1,45 @@
+{
+   "start":[
+       {
+    "name": "SELECT",
+    "queries": [
+        {
+            "query": "SELECT id, vorname AS 'Rufname', MAX(geburtsdatum) FROM schueler"
+        },
+        {
+            "query": "SELECT * FROM schueler\nWHERE vorname LIKE 'An%' AND id < '50'"
+        },
+        {
+            "query": "SELECT schueler.* FROM schueler\nJOIN klassen ON klassen.id = schueler.klasse_id\nWHERE schueler.id IN ( '1', '2') OR schueler.vorname LIKE 'Richi'"
+        },
+        {
+            "query": "SELECT * FROM schueler\nWHERE vorname LIKE 'An%' OR id BETWEEN '1' AND '5' AND id IN ( '2', '55', '4' )"
+        },
+        {
+            "query": "SELECT schueler.*, klasse.name FROM schueler\njoin klasse klasse_1 ON klasse.id = schueler.klasse_id\njoin lehrer ON lehrer.klasse_id = klasse_1.id\nWHERE vorname LIKE 'An%' OR id BETWEEN '1' AND '5' AND id IN ( '2', '55', '4' )"
+        },
+        {
+            "query": "SELECT * FROM schueler ORDER BY vorname DESC, nachname ASC , MAX(geburtsdatum) DESC"
+        },
+        {
+            "query": "SELECT * FROM schueler LIMIT 10 OFFSET 15"
+        },
+        {
+            "query": "SELECT schueler.*, klasse.name FROM schueler\njoin klasse klasse_1 ON klasse.id = schueler.klasse_id\njoin lehrer ON lehrer.klasse_id = klasse_1.id\nWHERE vorname LIKE 'An%' OR id BETWEEN '1' AND '5' AND id IN ( '2', '55', '4' )\nORDER BY vorname DESC, nachname ASC , MAX(geburtsdatum) DESC"
+        },
+        {
+            "query": "SELECT * FROM schueler\nWHERE id < '50' AND  ( vorname LIKE 'A%' OR vorname LIKE 'B%' )"
+        }
+    ]},
+    {
+        "name": "CREATE",
+        "queries": [
+        {
+            "query": "CREATE ..."
+        }
+       
+        
+    ]}
+
+   ]
+}
