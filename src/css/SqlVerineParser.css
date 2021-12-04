@@ -1,0 +1,15 @@
+
+.errorColor{
+    color: red;
+}
+
+#btnParseAll{
+    color: #fff;
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+#btnParse{
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+}

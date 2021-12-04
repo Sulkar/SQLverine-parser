@@ -7,7 +7,10 @@
             "query": "SELECT id, vorname AS 'Rufname', MAX(geburtsdatum) FROM schueler"
         },
         {
-            "query": "SELECT * FROM schueler\nWHERE vorname LIKE 'An%' AND id < '50'"
+            "query": "SELECT * FROM schueler\nWHERE vorname LIKE 'An%' AND id < '50'" 
+        },
+        {
+            "query": "SELECT id, vorname AS 'Rufname', MAX(geburtsdatum) AS maxxi, COUNT(klasse.id) FROM schueler"
         },
         {
             "query": "SELECT schueler.* FROM schueler\nJOIN klassen ON klassen.id = schueler.klasse_id\nWHERE schueler.id IN ( '1', '2') OR schueler.vorname LIKE 'Richi'"

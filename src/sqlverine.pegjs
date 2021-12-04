@@ -1,7 +1,7 @@
 {
 	//functions:
   	function checkBrackets(bracket){
-  		if(bracket == ("(" || ")")) return true;
+  		if(bracket == "(" || bracket == ")") return true;
         else return false;
 	}
 } 

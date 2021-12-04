@@ -41,10 +41,37 @@ function fillSelectWithStmtGroups() {
     option.text = stmtGroup.name;
     select.add(option);
   });
+}
+//Function:
+function parseAll(stmtGroup) {
+  currentStmtGroup = stmtGroup;
+  currentQueryNr = 0;
+  let outputAstArray = [];
+  let counter = 0;
+  const currentStmtGroupQueries = jsonData.start[currentStmtGroup].queries;
+  outputParsedObjectTextarea.classList.remove("errorColor");
+  currentStmtGroupQueries.forEach(query => {
+    try {
+      counter++;
+      outputAstArray.push("---------- Query Nr.: " + (counter - 1) + " ----------");
+      outputAstArray.push(parse(query.query));
+    } catch (error) {
+      outputParsedObjectTextarea.classList.add("errorColor");
+      outputParsedObjectTextarea.value = "Fehler beim Parsen des Queries Nr.: " + (counter - 1) + ".\nSiehe Konsole für weitere Informationen.\n\n";
+      outputParsedObjectTextarea.value += JSON.stringify(error, null, 4);
+      console.log(error);
+    }
 
+  })
+  if (outputAstArray.length == (counter * 2)) { //Da pro erfolgreichem Durchlauf zwei Elemente dem Array hinzugefügt werden.
+    outputParsedObjectTextarea.classList.remove("errorColor");
+    outputParsedObjectTextarea.value = "Es wurden alle " + (counter) + " Queries ohne Fehler geparst.\nSiehe Konsole für weitere Informationen.\n\n";
+    outputParsedObjectTextarea.value += JSON.stringify(outputAstArray, null, 4);
+  }
+  console.log(outputAstArray);
 }
 
-//Button: nextQuery
+//Select: Select Stmt Group
 document.querySelector('#selectStmtGrp').addEventListener("change", function () {
   currentStmtGroup = this.value;
   currentQueryNr = 0;
@@ -74,8 +101,9 @@ document.querySelector('#btnFindQuery').addEventListener("click", function () {
   addQueryToTextarea(jsonData.start[currentStmtGroup].queries[currentQueryNr].query);
 });
 
-//parse Textarea nach DIV
+//Button: parse Textarea nach DIV
 document.querySelector('#btnParse').addEventListener("click", function () {
+  outputParsedObjectTextarea.classList.remove("errorColor");
   try {
     //Zu parsender String wird aus der Textarea kopiert.
     let zuParsenderString = inputTextarea.value.trim();
@@ -84,20 +112,27 @@ document.querySelector('#btnParse').addEventListener("click", function () {
     //Das AST Objekt wird in eine formatierte Zeichenkette umgewandelt und in einer Textarea angezeigt.
     const outputAstStringify = JSON.stringify(outputAST, null, 4);
     outputParsedObjectTextarea.value = outputAstStringify;
-    console.log(outputAST);
 
     //TODO: AST Objekt in SQLverine Codeblöcke umwandeln
-    checkAst(outputAST)
+    astToSqlVerine(outputAST)
   } catch (error) {
-    outputParsedObjectTextarea.value = "Fehler beim Parsen des Statements. Siehe Konsole für weitere Informationen.\n\n";    
+    outputParsedObjectTextarea.classList.add("errorColor");
+    outputParsedObjectTextarea.value = "Fehler beim Parsen des Queries.\nSiehe Konsole für weitere Informationen.\n\n";
     outputParsedObjectTextarea.value += JSON.stringify(error, null, 4);
     console.log(error);
   }
+});
 
+//Button: parse Textarea nach DIV
+document.querySelector('#btnParseAll').addEventListener("click", function () {
+  parseAll(currentStmtGroup);
 });
 
 
-function checkAst(ast) {
+/* 
+  In eigene Klasse: AstToSqlVerine.js auslagern.
+*/
+function astToSqlVerine(ast) {
   ast.forEach(element => {
     if (element.type == "SELECT") {
       createSelect(element);
