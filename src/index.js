@@ -76,17 +76,24 @@ document.querySelector('#btnFindQuery').addEventListener("click", function () {
 
 //parse Textarea nach DIV
 document.querySelector('#btnParse').addEventListener("click", function () {
-  //Zu parsender String wird aus der Textarea kopiert.
-  let zuParsenderString = inputTextarea.value.trim();
-  //Ein AST Objekt wird mit Hilfe des PEG.js Parsers erstellt
-  let outputAST = parse(zuParsenderString);
-  //Das AST Objekt wird in eine formatierte Zeichenkette umgewandelt und in einer Textarea angezeigt.
-  const outputAstStringify = JSON.stringify(outputAST, null, 4);
-  outputParsedObjectTextarea.value = outputAstStringify;
-  console.log(outputAST);
+  try {
+    //Zu parsender String wird aus der Textarea kopiert.
+    let zuParsenderString = inputTextarea.value.trim();
+    //Ein AST Objekt wird mit Hilfe des PEG.js Parsers erstellt
+    let outputAST = parse(zuParsenderString);
+    //Das AST Objekt wird in eine formatierte Zeichenkette umgewandelt und in einer Textarea angezeigt.
+    const outputAstStringify = JSON.stringify(outputAST, null, 4);
+    outputParsedObjectTextarea.value = outputAstStringify;
+    console.log(outputAST);
 
-  //TODO: AST Objekt in SQLverine Codeblöcke umwandeln
-  checkAst(outputAST)
+    //TODO: AST Objekt in SQLverine Codeblöcke umwandeln
+    checkAst(outputAST)
+  } catch (error) {
+    outputParsedObjectTextarea.value = "Fehler beim Parsen des Statements. Siehe Konsole für weitere Informationen.\n\n";    
+    outputParsedObjectTextarea.value += JSON.stringify(error, null, 4);
+    console.log(error);
+  }
+
 });
 
 
