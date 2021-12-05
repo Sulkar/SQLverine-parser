@@ -4,22 +4,10 @@
     "name": "SELECT",
     "queries": [
         {
+            "query": "SELECT * FROM schueler"
+        },
+        {
             "query": "SELECT id, vorname AS 'Rufname', MAX(geburtsdatum) FROM schueler"
-        },
-        {
-            "query": "SELECT * FROM schueler\nWHERE vorname LIKE 'An%' AND id < '50'" 
-        },
-        {
-            "query": "SELECT id, vorname AS 'Rufname', MAX(geburtsdatum) AS maxxi, COUNT(klasse.id) FROM schueler"
-        },
-        {
-            "query": "SELECT schueler.* FROM schueler\nJOIN klassen ON klassen.id = schueler.klasse_id\nWHERE schueler.id IN ( '1', '2') OR schueler.vorname LIKE 'Richi'"
-        },
-        {
-            "query": "SELECT * FROM schueler\nWHERE vorname LIKE 'An%' OR id BETWEEN '1' AND '5' AND id IN ( '2', '55', '4' )"
-        },
-        {
-            "query": "SELECT schueler.*, klasse.name FROM schueler\njoin klasse klasse_1 ON klasse.id = schueler.klasse_id\njoin lehrer ON lehrer.klasse_id = klasse_1.id\nWHERE vorname LIKE 'An%' OR id BETWEEN '1' AND '5' AND id IN ( '2', '55', '4' )"
         },
         {
             "query": "SELECT * FROM schueler ORDER BY vorname DESC, nachname ASC , MAX(geburtsdatum) DESC"
@@ -28,17 +16,41 @@
             "query": "SELECT * FROM schueler LIMIT 10 OFFSET 15"
         },
         {
-            "query": "SELECT schueler.*, klasse.name FROM schueler\njoin klasse klasse_1 ON klasse.id = schueler.klasse_id\njoin lehrer ON lehrer.klasse_id = klasse_1.id\nWHERE vorname LIKE 'An%' OR id BETWEEN '1' AND '5' AND id IN ( '2', '55', '4' )\nORDER BY vorname DESC, nachname ASC , MAX(geburtsdatum) DESC"
-        },
-        {
-            "query": "SELECT * FROM schueler\nWHERE id < '50' AND  ( vorname LIKE 'A%' OR vorname LIKE 'B%' )"
+            "query": "SELECT id, vorname AS 'Rufname', MAX(geburtsdatum) AS maxxi, COUNT(klasse.id) FROM schueler"
         },
         {
             "query": "SELECT id, LENGTH(vorname) AS 'Vorname Laenge', MAX(geburtsdatum) AS max, COUNT(klasse.id), UPPER(nachname) FROM schueler"
         },
         {
-            "query": "SELECT LENGTH(vorname), SUBSTR(strasse,1,4) AS 'Teil von Strasse' FROM schueler"
+            "query": "SELECT LENGTH(vorname), SUBSTR('strasse','1','4') AS 'Teil von Strasse' FROM schueler"
+        },
+        {
+            "query": "SELECT * FROM schueler\nWHERE vorname LIKE 'An%' AND id < '50'" 
+        },
+        {
+            "query": "SELECT * FROM schueler\nWHERE vorname LIKE 'An%' OR id BETWEEN '1' AND '5' AND id IN ( '2', '55', '4' )"
+        },
+        {
+            "query": "SELECT * FROM schueler\nWHERE id < '50' AND  ( vorname LIKE 'A%' OR vorname LIKE 'B%' )"
+        },
+        {
+            "query": "SELECT vorname, nachname from schueler\nwhere LENGTH(vorname) <= 8"
+        },
+        {
+            "query": "SELECT schueler.vorname, schueler.nachname, klasse.name FROM schueler\nJOIN klassen ON klassen.id = schueler.klasse_id"
+        },       
+        {
+            "query": "SELECT schueler.* FROM schueler\nJOIN klassen ON klassen.id = schueler.klasse_id\nWHERE schueler.id IN ( '1', '2') OR schueler.vorname LIKE 'Richi'"
+        },        
+        {
+            "query": "SELECT schueler.*, klasse.name FROM schueler\njoin klasse klasse_1 ON klasse.id = schueler.klasse_id\njoin lehrer ON lehrer.klasse_id = klasse_1.id\nWHERE vorname LIKE 'An%' OR id BETWEEN '1' AND '5' AND id IN ( '2', '55', '4' )"
+        },
+        {
+            "query": "SELECT schueler.*, klasse.name FROM schueler\njoin klasse klasse_1 ON klasse.id = schueler.klasse_id\njoin lehrer ON lehrer.klasse_id = klasse_1.id\nWHERE vorname LIKE 'An%' OR id BETWEEN '1' AND '5' AND id IN ( '2', '55', '4' )\nORDER BY vorname DESC, nachname ASC , MAX(geburtsdatum) DESC"
         }
+        
+        
+        
     ]},
     {
         "name": "CREATE",

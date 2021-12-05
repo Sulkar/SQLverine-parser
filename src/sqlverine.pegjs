@@ -6,7 +6,6 @@
 	}
 } 
   
-  
 Start
  = select:(SelectStmt*)?  join:(JoinStmt*)? where:(WhereStmt*)? andOr:(AndOrStmt*)? groupBy:(GroupByStmt*)? 
  	orderBy:(OrderByStmt*)? limit:(LimitStmt*)? offset:(OffsetStmt*)?
@@ -49,11 +48,11 @@ SelectStmt
   = _ "SELECT"i  	
     _ x:SelectField xs:SelectFieldRest*
     _ "FROM"i
-    _ from:Identifier
+    _ from:SelectField
      {     
     return {    
       type: "SELECT",
-      columns: [x].concat(xs),      
+      selectFields: [x].concat(xs),      
       from: from
       };
   }
@@ -90,8 +89,6 @@ SelectStmt
     };
   }
   
-  
-  
   AndStmt = 
   	_ "AND"i
     _ x1:"("?
@@ -110,10 +107,10 @@ SelectStmt
   
   AsStmt = 
   	_ "AS"i 
-    _ x:Identifier  {
+    _ x:SelectField  {
     return {
     type: "AS",      
-      columns: x
+      selectField: x
     };
   }
   
@@ -123,17 +120,17 @@ SelectStmt
     {
     return {
     type: "GROUP BY",      
-      columns: [x1].concat(x2)
+      selectFields: [x1].concat(x2)
     };
   }
   
   OrderByStmt = 
   	_ "ORDER BY"i 
-    _ x1:OrderByField x2:OrderByFieldRest*
+    _ x1:SelectField x2:SelectFieldRest*
     {
     return {
     type: "ORDER BY",      
-      columns: [x1].concat(x2)
+      selectFields: [x1].concat(x2)
     };
   }
   
@@ -153,91 +150,82 @@ SelectStmt
   
   LimitStmt = 
   	_ "LIMIT"i 
-    _ x1:Identifier
+    _ x1:SelectField
     {
     return {
     type: "LIMIT",      
-      value: x1
+      selectField: x1
     };
   }
+  
   OffsetStmt = 
   	_ "OFFSET"i 
-    _ x1:Identifier
+    _ x1:SelectField
     {
     return {
     type: "OFFSET",      
-      value: x1
+      selectField: x1
     };
   }
   
   AggregatStmt = 
   	_ x1:AggregatTokens 
     _ "("
-    _ x2:Identifier
+    _ x2:SelectField
     _ ")"{
     return {
     type: "AGGREGAT",
      aggregat: x1,
-      columns: x2
+      selectField: x2
     };
   }
    
   StringFunctionStmt = 
   	_ x1:StringFunctionTokens 
     _ "("
-    _ x2:Identifier x3:IdentifierRest*
+    _ x2:SelectField x3:SelectFieldRest*
     _ ")"{
     return {
     type: "STRING_FUNCTION",
       string_function: x1,
-      columns: [x2].concat(x3)
+      selectFields: [x2].concat(x3)
     };
   }
 
 JoinStmt = 
   	_ "JOIN"i
-    _ x1:Identifier
-    _ x11: (!"ON"i Identifier)?
+    _ x1:SelectField
+    _ x11: (!"ON"i SelectField)?
     _ "ON"i
-    _ x2:Identifier 
+    _ x2:SelectField 
     _ "="
-    _ x3:Identifier
+    _ x3:SelectField
     {
     if(x11 != null) x1 = [x1].concat(x11[1]); // [0] = undefined, [1] = Identifier
     return {
    
     type: "JOIN",
     table: x1, 
-    column1: x2,
-    column2: x3
+    selectField1: x2,
+    selectField2: x3
       };
   }
+
 /* Select Fields */
 SelectField "select valid SelectField"
   = (
-  AggregatStmt AsStmt / AggregatStmt+
-  / StringFunctionStmt AsStmt / StringFunctionStmt+
-  / Identifier AsStmt / Identifier+
+  AggregatStmt AscStmt / AggregatStmt DescStmt / AggregatStmt AsStmt / AggregatStmt+
+  / StringFunctionStmt AscStmt / StringFunctionStmt DescStmt / StringFunctionStmt AsStmt / StringFunctionStmt+
+  / Identifier AscStmt / Identifier DescStmt / Identifier AsStmt / Identifier+
   / "*") 
-  
-OrderByField "select valid OrderByField"
-  = (
-  AggregatStmt AscStmt / AggregatStmt DescStmt/ AggregatStmt
-  / StringFunctionStmt AscStmt / StringFunctionStmt DescStmt / StringFunctionStmt
-  / Identifier AscStmt / Identifier DescStmt / Identifier 
-  ) 
 
 SelectFieldRest = _ "," _ s:SelectField {
 	return s;
 }
-OrderByFieldRest = _ "," _ s:OrderByField {
-	return s;
-}
-
 
 /* Operators */
 LogicExpr
-  = _ left:Identifier _ op:Operator _ right:Identifier _ {
+  = _ left:SelectField _ op:Operator _ right:SelectField _ {
     return {
       left: left,
       op: op,
@@ -246,7 +234,7 @@ LogicExpr
   }
   
 LogicExprBetween
-  = _ left:Identifier _ op:"BETWEEN"i _ rightFrom:Identifier _ "AND" _ rightTo:Identifier _ {
+  = _ left:SelectField _ op:"BETWEEN"i _ rightFrom:SelectField _ "AND" _ rightTo:SelectField _ {
     return {
       left: left,
       op: op,
@@ -256,7 +244,7 @@ LogicExprBetween
   }
   
 LogicExprIn
-  = _ left:Identifier _ op:"IN"i _ "(" _ right:Identifier rightN:IdentifierRest* _ ")" {   
+  = _ left:SelectField _ op:"IN"i _ "(" _ right:SelectField rightN:SelectFieldRest* _ ")" {   
     return {
       left: left,
       op: op,
@@ -266,14 +254,14 @@ LogicExprIn
 
 /* Identifier */
 AggregatTokens = "MIN"i / "MAX"i / "AVG"i / "COUNT"i / "SUM"i
-StringFunctionTokens = "LENGTH"i / "UPPER"i / "LOWER"i / "SUBSTR"i / "TRIM"i / "LTRIM"i / "RTRIM"i / "REPLACE"i / "RTRIM"i / "INSTR"i
+StringFunctionTokens = "LENGTH"i / "UPPER"i / "LOWER"i / "SUBSTR"i / "LTRIM"i / "RTRIM"i / "TRIM"i / "REPLACE"i / "INSTR"i
 
 Operator
   = "<>"       { return "<>"; }
-  / "<"        { return "<"; }
-  / ">"        { return ">"; }
   / "<="        { return "<="; }
   / ">="        { return ">="; }
+  / "<"        { return "<"; }
+  / ">"        { return ">"; }
   / "="        { return "="; }
   / "LIKE"i  { return "LIKE"; }
 

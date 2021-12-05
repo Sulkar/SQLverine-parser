@@ -114,7 +114,9 @@ document.querySelector('#btnParse').addEventListener("click", function () {
     outputParsedObjectTextarea.value = outputAstStringify;
 
     //TODO: AST Objekt in SQLverine Codeblöcke umwandeln
-    astToSqlVerine(outputAST)
+    //astToSqlVerine(outputAST)
+
+    
   } catch (error) {
     outputParsedObjectTextarea.classList.add("errorColor");
     outputParsedObjectTextarea.value = "Fehler beim Parsen des Queries.\nSiehe Konsole für weitere Informationen.\n\n";
