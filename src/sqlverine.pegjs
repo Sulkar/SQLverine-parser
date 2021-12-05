@@ -106,14 +106,16 @@ SelectStmt
   }
   
   AsStmt = 
-  	_ "AS"i 
-    _ x:SelectField  {
+    _ x1:(AggregatStmt / StringFunctionStmt / Identifier)
+  	_ "AS"i ![a-z0-9]i
+    _ x2:SelectField  {
     return {
-    type: "AS",      
-      selectField: x
+    type: "AS",  
+      selectField1: x1,    
+      selectField2: x2
     };
   }
-  
+ 
   GroupByStmt = 
   	_ "GROUP BY"i 
     _ x1:SelectField x2:SelectFieldRest*
@@ -135,16 +137,20 @@ SelectStmt
   }
   
   AscStmt =
-  _ "ASC"i {
+  _ x1:(AggregatStmt / StringFunctionStmt / Identifier)
+  _ "ASC"i ![a-z0-9]i{
     return {
-    type: "ASC"
+    type: "ASC",
+    selectField: x1
     };
   }
-  
+
   DescStmt =
-  _ "DESC"i {
+  _ x1:(AggregatStmt / StringFunctionStmt / Identifier)
+  _ "DESC"i ![a-z0-9]i{
     return {
-    type: "DESC"
+    type: "DESC",
+    selectField: x1
     };
   }
   
@@ -157,7 +163,7 @@ SelectStmt
       selectField: x1
     };
   }
-  
+
   OffsetStmt = 
   	_ "OFFSET"i 
     _ x1:SelectField
@@ -214,9 +220,10 @@ JoinStmt =
 /* Select Fields */
 SelectField "select valid SelectField"
   = (
-  AggregatStmt AscStmt / AggregatStmt DescStmt / AggregatStmt AsStmt / AggregatStmt+
-  / StringFunctionStmt AscStmt / StringFunctionStmt DescStmt / StringFunctionStmt AsStmt / StringFunctionStmt+
-  / Identifier AscStmt / Identifier DescStmt / Identifier AsStmt / Identifier+
+  AscStmt / DescStmt / AsStmt 
+  / AggregatStmt
+  / StringFunctionStmt
+  / Identifier
   / "*") 
 
 SelectFieldRest = _ "," _ s:SelectField {
