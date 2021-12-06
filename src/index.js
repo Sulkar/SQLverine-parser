@@ -8,7 +8,9 @@ import {
 import {
   SqlVerineEditor
 } from "../../SQLverine/src/SqlVerineEditor"
-import { parse } from "./sqlverine.pegjs";
+import {
+  parse
+} from "./sqlverine.pegjs";
 
 
 //global variables
@@ -191,9 +193,9 @@ document.querySelector('#btnParse').addEventListener("click", function () {
     outputParsedObjectTextarea.value = outputAstStringify;
 
     //TODO: AST Objekt in SQLverine Codeblöcke umwandeln
-    //astToSqlVerine(outputAST)
+    const astToSql = new AstToSqlVerine(outputAST);
+    astToSql.parseAst();
 
-    
   } catch (error) {
     outputParsedObjectTextarea.classList.add("errorColor");
     outputParsedObjectTextarea.value = "Fehler beim Parsen des Queries.\nSiehe Konsole für weitere Informationen.\n\n";
@@ -212,33 +214,131 @@ document.querySelector('#btnParseAll').addEventListener("click", function () {
   In eigene Klasse: AstToSqlVerine.js auslagern.
 */
 function astToSqlVerine(ast) {
-  ast.forEach(element => {
-    if (element.type == "SELECT") {
-      createSelect(element);
-    } else if (element.type == "WHERE") {
-      console.log("createWhere");
-    } //...
 
-  });
 
 }
 
 function createSelect(selectAst) {
-  let from = selectAst.from;
-  let columns = selectAst.columns;
-  columns.forEach(column => {
+  /* let from = selectAst.from;
+   let columns = selectAst.columns;
+   columns.forEach(column => {
 
-    column.forEach((item, index) => {
-      if (item.type == "COLUMN") {
-        console.log("Column: " + item.value);
-      } else if (item.type == "AS") {
-        console.log("AS new column: " + item.columns.value);
-      } else if (item.type == "AGGREGAT") {
-        console.log("Aggregat: " + item.aggregat);
-        console.log("Aggregat Column: " + item.columns.value);
-      }
+     column.forEach((item, index) => {
+       if (item.type == "COLUMN") {
+         console.log("Column: " + item.value);
+       } else if (item.type == "AS") {
+         console.log("AS new column: " + item.columns.value);
+       } else if (item.type == "AGGREGAT") {
+         console.log("Aggregat: " + item.aggregat);
+         console.log("Aggregat Column: " + item.columns.value);
+       }
+     });
+
+   });
+   console.log("Table: " + from.value);
+   */
+}
+
+class AstToSqlVerine {
+  constructor(ast) {
+    this.ast = ast;
+    this.htmlElementCount = 0;
+    this.outputHTML = "";
+    this.outputContainer = document.createElement("div");
+  }
+
+  parseAst() {
+    this.ast.forEach(element => {
+      switch (element.type) {
+
+        case "SELECT":
+          this.createSelect(element);
+          break;
+
+        default:
+          console.log("Element of type " + element.type + " canot be parsed.");
+
+      };
     });
 
-  });
-  console.log("Table: " + from.value);
+    console.log(this.outputContainer.innerHTML);
+  };
+
+  createSelect(element) {
+
+    const spanSelect = document.createElement("span");
+    spanSelect.innerHTML = "SELECT";
+    spanSelect.classList.add(this.getNextCodeElement(), "btnSelect", "synSQL", "sqlSelect", "start", "parent", "sqlIdentifier");
+    spanSelect.setAttribute("data-sql-element", "SELECT");
+
+    element.selectFields.forEach(selectField => {
+      spanSelect.append(this.createLeerzeichen());
+      switch (selectField.type) {
+
+        case "COLUMN":
+          spanSelect.append(this.createColumn(selectField));
+          break;
+        case "AS":
+
+          break;
+        case "AGGREGATE":
+
+          break;
+        case "STRING_FUNCTION":
+
+          break;
+
+        default:
+          console.log("Selectfield of type " + selectField.type + " canot be parsed.");
+
+      };
+
+    });
+
+    spanSelect.append(this.createLeerzeichen());
+
+    const spanFrom = document.createElement("span");
+    spanFrom.innerHTML ="FROM";
+    spanFrom.classList.add(this.getNextCodeElement());    
+    
+    this.createTable(element, spanSelect);
+    
+    this.outputContainer.append(spanSelect);
+
+  }
+
+  createTable(element, htmlToAppend){
+    htmlToAppend.append(this.createLeerzeichen());
+
+    const spanFrom = document.createElement("span");
+    spanFrom.innerHTML =element.from.value;
+    spanFrom.classList.add(this.getNextCodeElement(),"selTable", "synTables", "inputField", "sqlIdentifier", "root");
+    spanFrom.setAttribute("data-sql-element", "SELECT_FROM");  
+    htmlToAppend.append(spanFrom);
+  }
+
+  createColumn(selectField){
+    
+    const spanColumn = document.createElement("span");
+
+    spanColumn.innerHTML = selectField.value;
+    spanColumn.classList.add(this.getNextCodeElement(), "selColumn", "synColumns", "inputField", "sqlIdentifier", "root");
+    spanColumn.setAttribute("data-sql-element", "SELECT_SELECT");
+    return spanColumn;
+  }
+
+  createLeerzeichen() {
+    const spanLeerzeichen = document.createElement("span");
+    spanLeerzeichen.innerHTML = " ";
+    spanLeerzeichen.classList.add(this.getNextCodeElement(), "leerzeichen");
+    spanLeerzeichen.setAttribute("data-goto-element", "parent");
+
+    return spanLeerzeichen;
+  }
+
+  getNextCodeElement() {
+    const codeElementWithNumber = "codeElement_" + this.htmlElementCount;
+    this.htmlElementCount++;
+    return codeElementWithNumber;
+  }
 }
