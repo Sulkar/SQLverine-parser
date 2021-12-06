@@ -106,7 +106,7 @@ SelectStmt
   }
   
   AsStmt = 
-    _ x1:(AggregatStmt / StringFunctionStmt / Identifier)
+    _ x1:(AggregateStmt / StringFunctionStmt / Identifier)
   	_ "AS"i ![a-z0-9]i
     _ x2:SelectField  {
     return {
@@ -137,7 +137,7 @@ SelectStmt
   }
   
   AscStmt =
-  _ x1:(AggregatStmt / StringFunctionStmt / Identifier)
+  _ x1:(AggregateStmt / StringFunctionStmt / Identifier)
   _ "ASC"i ![a-z0-9]i{
     return {
     type: "ASC",
@@ -146,7 +146,7 @@ SelectStmt
   }
 
   DescStmt =
-  _ x1:(AggregatStmt / StringFunctionStmt / Identifier)
+  _ x1:(AggregateStmt / StringFunctionStmt / Identifier)
   _ "DESC"i ![a-z0-9]i{
     return {
     type: "DESC",
@@ -174,14 +174,14 @@ SelectStmt
     };
   }
   
-  AggregatStmt = 
-  	_ x1:AggregatTokens 
+  AggregateStmt = 
+  	_ x1:AggregateTokens 
     _ "("
     _ x2:SelectField
     _ ")"{
     return {
-    type: "AGGREGAT",
-     aggregat: x1,
+    type: "AGGREGATE",
+     aggregate: x1,
       selectField: x2
     };
   }
@@ -221,7 +221,7 @@ JoinStmt =
 SelectField "select valid SelectField"
   = (
   AscStmt / DescStmt / AsStmt 
-  / AggregatStmt
+  / AggregateStmt
   / StringFunctionStmt
   / Identifier
   / "*") 
@@ -260,7 +260,7 @@ LogicExprIn
   }
 
 /* Identifier */
-AggregatTokens = "MIN"i / "MAX"i / "AVG"i / "COUNT"i / "SUM"i
+AggregateTokens = "MIN"i / "MAX"i / "AVG"i / "COUNT"i / "SUM"i
 StringFunctionTokens = "LENGTH"i / "UPPER"i / "LOWER"i / "SUBSTR"i / "LTRIM"i / "RTRIM"i / "TRIM"i / "REPLACE"i / "INSTR"i
 
 Operator
