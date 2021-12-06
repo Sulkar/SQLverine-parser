@@ -204,7 +204,7 @@ JoinStmt =
     _ x11: (!"ON"i SelectField)?
     _ "ON"i
     _ x2:SelectField 
-    _ "="
+    _ x21:Operator
     _ x3:SelectField
     {
     if(x11 != null) x1 = [x1].concat(x11[1]); // [0] = undefined, [1] = Identifier
@@ -213,6 +213,7 @@ JoinStmt =
     type: "JOIN",
     table: x1, 
     selectField1: x2,
+    operator: x21,
     selectField2: x3
       };
   }

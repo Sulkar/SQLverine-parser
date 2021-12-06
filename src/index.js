@@ -2,7 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import "./css/SqlVerineParser.css"
 import initSqlJs from "sql.js";
 import {
-    VerineDatabase
+  VerineDatabase
 } from "../../SQLverine/src/VerineDatabase";
 
 import {
@@ -38,21 +38,21 @@ loadDbFromServer("Grundschule.db");
 function loadDbFromServer(dbName) {
   init(fetch("data/" + dbName).then(res => res.arrayBuffer())).then(function (initObject) {
 
-      CURRENT_VERINE_DATABASE = new VerineDatabase(dbName, initObject[0], "server");
-      CURRENT_VERINE_DATABASE.setupExercises();
-      CURRENT_DATABASE_INDEX = getIndexOfDatabaseobject(CURRENT_VERINE_DATABASE.name);
-      DATABASE_ARRAY[CURRENT_DATABASE_INDEX] = CURRENT_VERINE_DATABASE;
+    CURRENT_VERINE_DATABASE = new VerineDatabase(dbName, initObject[0], "server");
+    CURRENT_VERINE_DATABASE.setupExercises();
+    CURRENT_DATABASE_INDEX = getIndexOfDatabaseobject(CURRENT_VERINE_DATABASE.name);
+    DATABASE_ARRAY[CURRENT_DATABASE_INDEX] = CURRENT_VERINE_DATABASE;
 
-      //reinit SqlVerineEditor       
-      sqlVerineEditor.clearOutputContainer();
-      sqlVerineEditor.resetRunFunctions();
-      sqlVerineEditor.activateExercises(false);
-      sqlVerineEditor.setVerineDatabase(CURRENT_VERINE_DATABASE);
-      sqlVerineEditor.reinit();
-      ////////////
+    //reinit SqlVerineEditor       
+    sqlVerineEditor.clearOutputContainer();
+    sqlVerineEditor.resetRunFunctions();
+    sqlVerineEditor.activateExercises(false);
+    sqlVerineEditor.setVerineDatabase(CURRENT_VERINE_DATABASE);
+    sqlVerineEditor.reinit();
+    ////////////
 
   }, function (error) {
-      console.log(error)
+    console.log(error)
   });
 }
 
@@ -60,9 +60,9 @@ function loadDbFromServer(dbName) {
 function getIndexOfDatabaseobject(databaseName) {
   var indexOfDatabaseobject = null;
   DATABASE_ARRAY.forEach((element, index) => {
-      if (element.name == databaseName) {
-          indexOfDatabaseobject = index;
-      }
+    if (element.name == databaseName) {
+      indexOfDatabaseobject = index;
+    }
   });
   return indexOfDatabaseobject;
 }
@@ -71,7 +71,7 @@ function getIndexOfDatabaseobject(databaseName) {
 async function init(dataPromise) {
   //fetch Database
   const sqlPromise = initSqlJs({
-      locateFile: file => `${file}`
+    locateFile: file => `${file}`
   });
   //fetch active code view json
   const activeCodeViewPromise = fetch("data/activeCodeViewData.json");
@@ -85,7 +85,6 @@ async function init(dataPromise) {
 
 //load JSON SQL Queries
 let jsonData;
-let currentStmt = "SELECT";
 let currentQueryNr = 0;
 let currentStmtGroup = 0;
 fetch("./data/SqlQueries.json")
@@ -195,6 +194,7 @@ document.querySelector('#btnParse').addEventListener("click", function () {
     //TODO: AST Objekt in SQLverine Codeblöcke umwandeln
     const astToSql = new AstToSqlVerine(outputAST);
     astToSql.parseAst();
+    sqlVerineEditor.fillCodeAreaWithCode(astToSql.outputContainer.innerHTML, astToSql.htmlElementCount);
 
   } catch (error) {
     outputParsedObjectTextarea.classList.add("errorColor");
@@ -249,10 +249,14 @@ class AstToSqlVerine {
 
   parseAst() {
     this.ast.forEach(element => {
+
+      let currentCodeline;
       switch (element.type) {
 
         case "SELECT":
-          this.createSelect(element);
+          currentCodeline = this.createCodeline();
+          this.outputContainer.append(currentCodeline);
+          this.createSelect(element, currentCodeline);
           break;
 
         default:
@@ -264,19 +268,34 @@ class AstToSqlVerine {
     console.log(this.outputContainer.innerHTML);
   };
 
-  createSelect(element) {
+  createSelect(element, currentCodeline) {
+
+
 
     const spanSelect = document.createElement("span");
     spanSelect.innerHTML = "SELECT";
     spanSelect.classList.add(this.getNextCodeElement(), "btnSelect", "synSQL", "sqlSelect", "start", "parent", "sqlIdentifier");
     spanSelect.setAttribute("data-sql-element", "SELECT");
 
-    element.selectFields.forEach(selectField => {
-      spanSelect.append(this.createLeerzeichen());
+    element.selectFields.forEach((selectField, idx) => {
+
+      const leerZeichenSpan = this.createLeerzeichen();
+      console.log(idx)
+      if (idx > 0) {
+        leerZeichenSpan.innerHTML = ", ";
+      }
+      spanSelect.append(leerZeichenSpan);
       switch (selectField.type) {
 
         case "COLUMN":
-          spanSelect.append(this.createColumn(selectField));
+
+          const colSpan = this.createColumn(selectField);
+          if (idx > 0) {
+            colSpan.classList.add("extended");
+          } else {
+            colSpan.classList.add("root");
+          }
+          spanSelect.append(colSpan);
           break;
         case "AS":
 
@@ -298,31 +317,36 @@ class AstToSqlVerine {
     spanSelect.append(this.createLeerzeichen());
 
     const spanFrom = document.createElement("span");
-    spanFrom.innerHTML ="FROM";
-    spanFrom.classList.add(this.getNextCodeElement());    
-    
+    spanFrom.innerHTML = "FROM";
+    spanFrom.setAttribute("data-goto-element", "parent");
+    spanFrom.classList.add(this.getNextCodeElement());
+    spanSelect.append(spanFrom);
     this.createTable(element, spanSelect);
-    
-    this.outputContainer.append(spanSelect);
+
+
+    // // mein handy hat keinen Akku mehr LOL :-D
+
+    currentCodeline.append(spanSelect);
+
 
   }
 
-  createTable(element, htmlToAppend){
+  createTable(element, htmlToAppend) {
     htmlToAppend.append(this.createLeerzeichen());
 
     const spanFrom = document.createElement("span");
-    spanFrom.innerHTML =element.from.value;
-    spanFrom.classList.add(this.getNextCodeElement(),"selTable", "synTables", "inputField", "sqlIdentifier", "root");
-    spanFrom.setAttribute("data-sql-element", "SELECT_FROM");  
+    spanFrom.innerHTML = element.from.value;
+    spanFrom.classList.add(this.getNextCodeElement(), "selTable", "synTables", "inputField", "sqlIdentifier", "root");
+    spanFrom.setAttribute("data-sql-element", "SELECT_FROM");
     htmlToAppend.append(spanFrom);
   }
 
-  createColumn(selectField){
-    
+  createColumn(selectField) {
+
     const spanColumn = document.createElement("span");
 
     spanColumn.innerHTML = selectField.value;
-    spanColumn.classList.add(this.getNextCodeElement(), "selColumn", "synColumns", "inputField", "sqlIdentifier", "root");
+    spanColumn.classList.add(this.getNextCodeElement(), "selColumn", "synColumns", "inputField", "sqlIdentifier");
     spanColumn.setAttribute("data-sql-element", "SELECT_SELECT");
     return spanColumn;
   }
@@ -336,6 +360,12 @@ class AstToSqlVerine {
     return spanLeerzeichen;
   }
 
+
+  createCodeline() {
+    const spanCodeline = document.createElement("span");
+    spanCodeline.classList.add("codeline");
+    return spanCodeline;
+  }
   getNextCodeElement() {
     const codeElementWithNumber = "codeElement_" + this.htmlElementCount;
     this.htmlElementCount++;
