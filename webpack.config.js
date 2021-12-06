@@ -9,6 +9,7 @@ module.exports = {
     output: {
         filename: 'main.js',
         path: path.resolve(__dirname, 'dist'),
+        clean: true,
     },
 
     //setzt das Root Verzeichnis des Webpack Development Servers auf einen Ordner
@@ -47,12 +48,10 @@ module.exports = {
         new CopyPlugin({
             patterns: [
                 { from: 'src/index.html', to: '' },
-                { from: '../SQLverine/src/css/SqlVerineEditor.css', to: '' },
-                { from: 'src/css/SqlVerineParser.css', to: '' },
                 { from: 'node_modules/sql.js/dist/sql-wasm.wasm', to: '' },
                 { from: '../SQLverine/src/activeCodeViewData.json', to: 'data' },
                 { from: 'src/data', to: 'data' },
-            ],
+            ],           
         }),
         new MiniCssExtractPlugin(),
     ],

@@ -1,8 +1,85 @@
+import 'bootstrap/dist/css/bootstrap.min.css';
+import "./css/SqlVerineParser.css"
+import initSqlJs from "sql.js";
+import {
+    VerineDatabase
+} from "../../SQLverine/src/VerineDatabase";
 
 import {
   SqlVerineEditor
 } from "../../SQLverine/src/SqlVerineEditor"
 import { parse } from "./sqlverine.pegjs";
+
+
+//global variables
+var CURRENT_VERINE_DATABASE;
+var DATABASE_ARRAY = [];
+
+var CURRENT_DATABASE_INDEX = 0;
+DATABASE_ARRAY.push(new VerineDatabase("Grundschule.db", null, "server"));
+
+//SQLverine Editor
+var sqlVerineEditor = new SqlVerineEditor();
+sqlVerineEditor.setEditorContainer("SqlVerineEditor");
+sqlVerineEditor.setSchemaContainer("schemaArea");
+sqlVerineEditor.setOutputContainer("outputArea");
+sqlVerineEditor.setOutputContainerMobile("outputAreaMobile");
+sqlVerineEditor.showCodeButton(false);
+sqlVerineEditor.showCodeSwitch(false);
+sqlVerineEditor.showRunButton(false);
+sqlVerineEditor.init();
+
+loadDbFromServer("Grundschule.db");
+
+
+//function: lädt eine DB vom Server
+function loadDbFromServer(dbName) {
+  init(fetch("data/" + dbName).then(res => res.arrayBuffer())).then(function (initObject) {
+
+      CURRENT_VERINE_DATABASE = new VerineDatabase(dbName, initObject[0], "server");
+      CURRENT_VERINE_DATABASE.setupExercises();
+      CURRENT_DATABASE_INDEX = getIndexOfDatabaseobject(CURRENT_VERINE_DATABASE.name);
+      DATABASE_ARRAY[CURRENT_DATABASE_INDEX] = CURRENT_VERINE_DATABASE;
+
+      //reinit SqlVerineEditor       
+      sqlVerineEditor.clearOutputContainer();
+      sqlVerineEditor.resetRunFunctions();
+      sqlVerineEditor.activateExercises(false);
+      sqlVerineEditor.setVerineDatabase(CURRENT_VERINE_DATABASE);
+      sqlVerineEditor.reinit();
+      ////////////
+
+  }, function (error) {
+      console.log(error)
+  });
+}
+
+// function: liefert den Index eines Datenbankobjekts aus dem DATABASE_ARRAY anhand des Namens zurück
+function getIndexOfDatabaseobject(databaseName) {
+  var indexOfDatabaseobject = null;
+  DATABASE_ARRAY.forEach((element, index) => {
+      if (element.name == databaseName) {
+          indexOfDatabaseobject = index;
+      }
+  });
+  return indexOfDatabaseobject;
+}
+
+//function: Datenbank und JSON für active code view werden geladen
+async function init(dataPromise) {
+  //fetch Database
+  const sqlPromise = initSqlJs({
+      locateFile: file => `${file}`
+  });
+  //fetch active code view json
+  const activeCodeViewPromise = fetch("data/activeCodeViewData.json");
+  const [sql, bufferedDatabase, activeCodeView] = await Promise.all([sqlPromise, dataPromise, activeCodeViewPromise]);
+
+  const jsonData = await activeCodeView.json();
+
+  return [new sql.Database(new Uint8Array(bufferedDatabase)), jsonData];
+}
+
 
 //load JSON SQL Queries
 let jsonData;

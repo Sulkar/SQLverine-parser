@@ -5,8 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SQLverine parser</title>
-    <link rel="stylesheet" type="text/css" href="/SqlVerineEditor.css">
-    <link rel="stylesheet" type="text/css" href="/SqlVerineParser.css">
+    <link rel="stylesheet" href="main.css">
 </head>
 
 <body>
@@ -28,21 +27,13 @@
     <br>
     <textarea id="outputParsedObjectTextarea" style="width: 100%; height: 300px;" placeholder="output AST" spellcheck="false"></textarea>
     <br>
-    <div id="sqlParserOutputHTML" class="codeArea">
-
-        <!-- Beispiel Output wie im SQLverine Editor -->
-        <span class="codeElement_11 btnSelect synSQL sqlSelect start parent sqlIdentifier inputFields active"
-            data-sql-element="SELECT">SELECT<span class="codeElement_12 leerzeichen"
-                data-goto-element="parent">&nbsp;</span><span
-                class="codeElement_13 selColumn synColumns lehrer inputField sqlIdentifier root"
-                data-sql-element="SELECT_SELECT" data-next-element="17" data-element-group="undefined">id</span><span
-                class="codeElement_14 leerzeichen" data-goto-element="parent">&nbsp;</span><span class="codeElement_15"
-                data-goto-element="11">FROM</span><span class="codeElement_16 leerzeichen"
-                data-goto-element="parent">&nbsp;</span><span
-                class="codeElement_17 selTable synTables inputField sqlIdentifier root" data-sql-element="SELECT_FROM"
-                data-next-element="13" data-element-group="undefined">lehrer</span></span>
-
-    </div>
+  
+    <!-- SQLverine Editor -->
+    <div id="SqlVerineEditor"></div>
+    <div id="outputArea"></div>
+    <div id="schemaArea"></div>
+    <div id="outputAreaMobile"></div>
+    
     <!-- add script here -->
     <script src="main.js"></script>
 </body>
