@@ -274,7 +274,7 @@ class AstToSqlVerine {
 
     const spanSelect = document.createElement("span");
     spanSelect.innerHTML = "SELECT";
-    spanSelect.classList.add(this.getNextCodeElement(), "btnSelect", "synSQL", "sqlSelect", "start", "parent", "sqlIdentifier");
+    spanSelect.classList.add(this.getNextCodeElement(),  "btnSelect", "synSQL", "sqlSelect", "start", "parent", "sqlIdentifier");
     spanSelect.setAttribute("data-sql-element", "SELECT");
 
     element.selectFields.forEach((selectField, idx) => {
@@ -289,16 +289,12 @@ class AstToSqlVerine {
 
         case "COLUMN":
 
-          const colSpan = this.createColumn(selectField);
-          if (idx > 0) {
-            colSpan.classList.add("extended");
-          } else {
-            colSpan.classList.add("root");
-          }
+          const colSpan = this.createColumn(selectField, idx);
           spanSelect.append(colSpan);
           break;
         case "AS":
-
+          const asSpan = this.createAS(selectField, idx);
+          spanSelect.append(asSpan);
           break;
         case "AGGREGATE":
 
@@ -331,6 +327,13 @@ class AstToSqlVerine {
 
   }
 
+ getTableFromColumn(selectField){
+  if(selectField.value.split('.').length>1){
+    return selectField.value.split('.')[0];
+  }
+  return this.ast[0].mainTable.value;
+ }
+
   createTable(element, htmlToAppend) {
     htmlToAppend.append(this.createLeerzeichen());
 
@@ -341,13 +344,42 @@ class AstToSqlVerine {
     htmlToAppend.append(spanFrom);
   }
 
-  createColumn(selectField) {
+  createColumn(selectField, idx) {
 
     const spanColumn = document.createElement("span");
 
     spanColumn.innerHTML = selectField.value;
-    spanColumn.classList.add(this.getNextCodeElement(), "selColumn", "synColumns", "inputField", "sqlIdentifier");
+    spanColumn.classList.add(this.getNextCodeElement(), this.getTableFromColumn(selectField), "selColumn", "synColumns", "inputField", "sqlIdentifier");
     spanColumn.setAttribute("data-sql-element", "SELECT_SELECT");
+
+    if (idx > 0) {
+      spanColumn.classList.add("extended");
+    } else {
+      spanColumn.classList.add("root");
+    }
+
+    return spanColumn;
+  }
+
+  createAS(selectField, idx){
+    const spanColumn = this.createColumn(selectField.selectField1,idx);
+    
+    const innerSpan = document.createElement("span");
+    innerSpan.classList.add(this.getNextCodeElement(), "btnAs", "synSQL", "sqlAs", "sqlIdentifier", "inputFields");
+    innerSpan.setAttribute("data-sql-element","AS");
+    innerSpan.append(this.createLeerzeichen());
+
+    innerSpan.innerHTML+="AS";
+
+    innerSpan.append(this.createLeerzeichen());
+
+    const asSpan= document.createElement("span");
+    asSpan.classList.add(this.getNextCodeElement(), "inputField", "root", "sqlIdentifier", "input", "inputValue", "synValue");
+    asSpan.setAttribute("data-sql-element","AS_1");
+    asSpan.innerHTML= "'"+ selectField.selectField2.value+"'";
+
+    innerSpan.append(asSpan);
+    spanColumn.append(innerSpan);
     return spanColumn;
   }
 
