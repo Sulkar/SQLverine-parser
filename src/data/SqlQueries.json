@@ -1,66 +1,71 @@
 {
-   "start":[
-       {
-    "name": "SELECT",
-    "queries": [
+    "start": [
         {
-            "query": "SELECT *, vorname FROM schueler"
+            "name": "SELECT",
+            "queries": [
+                {
+                    "query": "SELECT *, vorname FROM schueler"
+                },
+                {
+                    "query": "SELECT id, vorname AS 'Rufname', MAX(geburtsdatum) FROM schueler"
+                },
+                {
+                    "query": "SELECT * FROM schueler ORDER BY vorname DESC, nachname ASC , MAX(geburtsdatum) DESC"
+                },
+                {
+                    "query": "SELECT * FROM schueler LIMIT 10 OFFSET 15"
+                },
+                {
+                    "query": "SELECT id, vorname AS 'Rufname', MAX(geburtsdatum) AS maxxi, COUNT(klasse.id) FROM schueler"
+                },
+                {
+                    "query": "SELECT id, LENGTH(vorname) AS 'Vorname Laenge', MAX(geburtsdatum) AS max, COUNT(klasse.id), UPPER(nachname) FROM schueler"
+                },
+                {
+                    "query": "SELECT LENGTH(vorname), SUBSTR('strasse','1','4') AS 'Teil von Strasse' FROM schueler"
+                },
+                {
+                    "query": "SELECT * FROM schueler\nWHERE vorname LIKE 'An%' AND id < '50'"
+                },
+                {
+                    "query": "SELECT * FROM schueler\nWHERE vorname LIKE 'An%' OR id BETWEEN '1' AND '5' AND id IN ( '2', '55', '4' )"
+                },
+                {
+                    "query": "SELECT * FROM schueler\nWHERE id < '50' AND  ( vorname LIKE 'A%' OR vorname LIKE 'B%' )"
+                },
+                {
+                    "query": "SELECT vorname, nachname from schueler\nwhere LENGTH(vorname) <= 8"
+                },
+                {
+                    "query": "SELECT schueler.vorname, schueler.nachname, klasse.name FROM schueler\nJOIN klassen ON klassen.id = schueler.klasse_id"
+                },
+                {
+                    "query": "SELECT schueler.* FROM schueler\nJOIN klassen ON klassen.id = schueler.klasse_id\nWHERE schueler.id IN ( '1', '2') OR schueler.vorname LIKE 'Richi'"
+                },
+                {
+                    "query": "SELECT schueler.*, klasse.name FROM schueler\njoin klasse klasse_1 ON klasse.id = schueler.klasse_id\njoin lehrer ON lehrer.klasse_id = klasse_1.id\nWHERE vorname LIKE 'An%' OR id BETWEEN '1' AND '5' AND id IN ( '2', '55', '4' )"
+                },
+                {
+                    "query": "SELECT schueler.*, klasse.name FROM schueler\njoin klasse klasse_1 ON klasse.id = schueler.klasse_id\njoin lehrer ON lehrer.klasse_id = klasse_1.id\nWHERE vorname LIKE 'An%' OR id BETWEEN '1' AND '5' AND id IN ( '2', '55', '4' )\nORDER BY vorname DESC, nachname ASC , MAX(geburtsdatum) DESC"
+                }
+            ]
         },
         {
-            "query": "SELECT id, vorname AS 'Rufname', MAX(geburtsdatum) FROM schueler"
-        },
-        {
-            "query": "SELECT * FROM schueler ORDER BY vorname DESC, nachname ASC , MAX(geburtsdatum) DESC"
-        },
-        {
-            "query": "SELECT * FROM schueler LIMIT 10 OFFSET 15"
-        },
-        {
-            "query": "SELECT id, vorname AS 'Rufname', MAX(geburtsdatum) AS maxxi, COUNT(klasse.id) FROM schueler"
-        },
-        {
-            "query": "SELECT id, LENGTH(vorname) AS 'Vorname Laenge', MAX(geburtsdatum) AS max, COUNT(klasse.id), UPPER(nachname) FROM schueler"
-        },
-        {
-            "query": "SELECT LENGTH(vorname), SUBSTR('strasse','1','4') AS 'Teil von Strasse' FROM schueler"
-        },
-        {
-            "query": "SELECT * FROM schueler\nWHERE vorname LIKE 'An%' AND id < '50'" 
-        },
-        {
-            "query": "SELECT * FROM schueler\nWHERE vorname LIKE 'An%' OR id BETWEEN '1' AND '5' AND id IN ( '2', '55', '4' )"
-        },
-        {
-            "query": "SELECT * FROM schueler\nWHERE id < '50' AND  ( vorname LIKE 'A%' OR vorname LIKE 'B%' )"
-        },
-        {
-            "query": "SELECT vorname, nachname from schueler\nwhere LENGTH(vorname) <= 8"
-        },
-        {
-            "query": "SELECT schueler.vorname, schueler.nachname, klasse.name FROM schueler\nJOIN klassen ON klassen.id = schueler.klasse_id"
-        },       
-        {
-            "query": "SELECT schueler.* FROM schueler\nJOIN klassen ON klassen.id = schueler.klasse_id\nWHERE schueler.id IN ( '1', '2') OR schueler.vorname LIKE 'Richi'"
-        },        
-        {
-            "query": "SELECT schueler.*, klasse.name FROM schueler\njoin klasse klasse_1 ON klasse.id = schueler.klasse_id\njoin lehrer ON lehrer.klasse_id = klasse_1.id\nWHERE vorname LIKE 'An%' OR id BETWEEN '1' AND '5' AND id IN ( '2', '55', '4' )"
-        },
-        {
-            "query": "SELECT schueler.*, klasse.name FROM schueler\njoin klasse klasse_1 ON klasse.id = schueler.klasse_id\njoin lehrer ON lehrer.klasse_id = klasse_1.id\nWHERE vorname LIKE 'An%' OR id BETWEEN '1' AND '5' AND id IN ( '2', '55', '4' )\nORDER BY vorname DESC, nachname ASC , MAX(geburtsdatum) DESC"
+            "name": "CREATE",
+            "queries": [
+                {
+                    "query": "CREATE TABLE 'schueler' (\n'id' INTEGER PRIMARY KEY,\n'vorname' TEXT\n)"
+                },
+                {
+                    "query": "CREATE TABLE 'schueler' (\n'id' INTEGER PRIMARY KEY,\n'vorname' TEXT,\n'nachname' TEXT UNIQUE\n)"
+                },
+                {
+                    "query": "CREATE TABLE 'schueler' (\n'id' INTEGER PRIMARY KEY,\n'vorname' TEXT,\n'nachname' TEXT,\n'klasse_id' INTEGER,\nFOREIGN KEY (klasse_id) REFERENCES klassen(id)\n)"
+                },
+                {
+                    "query": "CREATE TABLE 'klassen' (\n'id' INTEGER PRIMARY KEY,\n'name' TEXT,\n'lehrer_id' INTEGER,\n'schueler_id' INTEGER,\nFOREIGN KEY (lehrer_id) REFERENCES lehrer(id),\nFOREIGN KEY (schueler_id) REFERENCES schueler(id)\n)"
+                }
+            ]
         }
-        
-        
-        
-    ]},
-    {
-        "name": "CREATE",
-        "queries": [
-        {
-            "query": "CREATE ..."
-        }
-       
-        
-    ]}
-
-   ]
+    ]
 }

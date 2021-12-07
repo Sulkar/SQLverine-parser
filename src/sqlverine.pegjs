@@ -6,15 +6,32 @@
 	}
 } 
   
-Start
- = select:(SelectStmt*)?  join:(JoinStmt*)? where:(WhereStmt*)? andOr:(AndOrStmt*)? groupBy:(GroupByStmt*)? 
+Start = StartSelect / StartCreate
+
+StartCreate = create:CreateStmt createColumn:(CreateColumnStmt*)? craeateForeignKey:(CreateForeignKeyStmt*)? _ ")"
+	{
+    let resultArray = [];
+
+    resultArray = resultArray.concat(create);
+
+    createColumn.forEach((createColumn) =>{
+      resultArray = resultArray.concat(createColumn);
+    });
+    craeateForeignKey.forEach((craeateForeignKey) =>{
+      resultArray = resultArray.concat(craeateForeignKey);
+    });
+    return resultArray;
+    }
+    
+StartSelect
+ = select:SelectStmt join:(JoinStmt*)? where:(WhereStmt*)? andOr:(AndOrStmt*)? groupBy:(GroupByStmt*)? 
  	orderBy:(OrderByStmt*)? limit:(LimitStmt*)? offset:(OffsetStmt*)?
  	
   { 
     let resultArray = [];
-    select.forEach((select) =>{
-      resultArray = resultArray.concat(select);
-    });
+    
+    resultArray = resultArray.concat(select);
+    
     join.forEach((join) =>{
       resultArray = resultArray.concat(join);
     });
@@ -43,7 +60,49 @@ Start
 AndOrStmt
   = OrStmt 
   / AndStmt
-  
+
+CreateStmt
+  = _ "CREATE TABLE"i  	
+    _ x:SelectField
+    _ "("
+     {     
+    return {    
+      type: "CREATE TABLE",
+      selectField: x,      
+      mainTable: x
+      };
+  }
+CreateColumnStmt = 
+  	_ x:SelectField _ x1:DatatypeTokens _ x2:ConstraintTokens?
+    _ ","?
+    {
+    return {
+    type: "CREATE COLUMN",
+      selectField: x,
+      datatype: x1,
+      constraint: x2
+    };
+  }
+ CreateForeignKeyStmt
+  = _ "FOREIGN KEY"i
+    _ "("
+    _ x:SelectField
+    _ ")"
+    _ "REFERENCES"i
+    _ x1:SelectField
+    _ "("
+    _ x2:SelectField
+    _ ")"
+    _ ","?
+     {     
+    return {    
+      type: "CREATE FOREIGN KEY",
+      selectField1: x,
+      selectField2: x1, 
+      selectField3: x2 
+      };
+  }
+
 SelectStmt
   = _ "SELECT"i  	
     _ x:SelectField xs:SelectFieldRest*
@@ -264,6 +323,8 @@ LogicExprIn
 /* Identifier */
 AggregateTokens = "MIN"i / "MAX"i / "AVG"i / "COUNT"i / "SUM"i
 StringFunctionTokens = "LENGTH"i / "UPPER"i / "LOWER"i / "SUBSTR"i / "LTRIM"i / "RTRIM"i / "TRIM"i / "REPLACE"i / "INSTR"i
+DatatypeTokens = "INTEGER"i / "TEXT"i / "REAL"i / "BLOB"i
+ConstraintTokens = "UNIQUE"i / "PRIMARY KEY"i / "NOT NULL"i
 
 Operator
   = "<>"       { return "<>"; }
