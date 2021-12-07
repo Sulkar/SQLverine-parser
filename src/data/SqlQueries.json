@@ -75,7 +75,30 @@
                 },
                 {
                     "query": "INSERT INTO lehrer (id, vorname) VALUES ('5', 'Richi')"
-                }                
+                }
+            ]
+        },
+        {
+            "name": "UPDATE",
+            "queries": [
+                {
+                    "query": "UPDATE lehrer SET vorname  =  'Richi'"
+                },
+                {
+                    "query": "UPDATE lehrer SET vorname  =  'Richi',\nname =  'Muller',\nklasse_id =  '2'"
+                },
+                {
+                    "query": "UPDATE lehrer SET vorname  =  'Richi'\nWHERE id = '6'"
+                },
+                {
+                    "query": "UPDATE lehrer SET vorname  =  'Richi',\nname =  'Muller',\nklasse_id =  '2'\nWHERE id = '6'"
+                },
+                {
+                    "query": "UPDATE lehrer SET vorname  =  'Richi'\nWHERE id < '6' AND vorname LIKE 'A%'"
+                },
+                {
+                    "query": "UPDATE lehrer SET vorname  =  'Richi'\nWHERE id < '6' AND vorname LIKE 'A%' OR nachname = 'Müller'"
+                }
             ]
         }
     ]

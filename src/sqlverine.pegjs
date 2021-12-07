@@ -6,7 +6,20 @@
 	}
 } 
   
-Start = StartSelect / StartCreate / StartInsert
+Start = StartSelect / StartCreate / StartInsert / StartUpdate
+
+StartUpdate = update:UpdateStmt where:(WhereStmt*)? andOr:(AndOrStmt*)?
+	{
+    let resultArray = [];
+    resultArray = resultArray.concat(update);
+    where.forEach((where) =>{
+      resultArray = resultArray.concat(where);
+    });
+    andOr.forEach((andOr) =>{
+      resultArray = resultArray.concat(andOr);
+    });
+    return resultArray;
+    }
 
 StartInsert = insert:InsertStmt
 	{
@@ -85,6 +98,25 @@ InsertStmt
       mainTable: x,
       selectFields1: [x1].concat(x2),
       selectFields2: [x3].concat(x4)
+      };
+  }
+  
+UpdateStmt
+  = _ "UPDATE"i  	
+    _ x:SelectField
+    _ "SET"i
+    _ x2:(LogicExpr _ ","?)*
+     {
+     let updates = []
+     x2.forEach(element =>{
+     	updates = updates.concat(element[0])
+     });
+     
+    return {    
+      type: "UPDATE",
+      selectField1: x,
+      mainTable: x,
+      updates: updates
       };
   }
   
@@ -374,7 +406,7 @@ Column = x:[a-z0-9_%*]i xs:[a-z0-9_.%*]i* {
     }
 }
 Input "Input" 
-	= [''] x:[a-z0-9_%* ]i* [''] {
+	= [''] x:[a-z0-9_%*äÄüÜöÖß ]i* [''] {
     return {
     type:"INPUT",
     value:text(x).replaceAll("'","")
