@@ -53,7 +53,8 @@ SelectStmt
     return {    
       type: "SELECT",
       selectFields: [x].concat(xs),      
-      from: from
+      from: from,
+      mainTable: from
       };
   }
   
