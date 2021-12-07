@@ -4,7 +4,7 @@
     "name": "SELECT",
     "queries": [
         {
-            "query": "SELECT * FROM schueler"
+            "query": "SELECT *, vorname FROM schueler"
         },
         {
             "query": "SELECT id, vorname AS 'Rufname', MAX(geburtsdatum) FROM schueler"
