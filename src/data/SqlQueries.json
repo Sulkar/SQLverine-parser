@@ -66,6 +66,17 @@
                     "query": "CREATE TABLE 'klassen' (\n'id' INTEGER PRIMARY KEY,\n'name' TEXT,\n'lehrer_id' INTEGER,\n'schueler_id' INTEGER,\nFOREIGN KEY (lehrer_id) REFERENCES lehrer(id),\nFOREIGN KEY (schueler_id) REFERENCES schueler(id)\n)"
                 }
             ]
+        },
+        {
+            "name": "INSERT",
+            "queries": [
+                {
+                    "query": "INSERT INTO lehrer (id) VALUES ('5')"
+                },
+                {
+                    "query": "INSERT INTO lehrer (id, vorname) VALUES ('5', 'Richi')"
+                }                
+            ]
         }
     ]
 }

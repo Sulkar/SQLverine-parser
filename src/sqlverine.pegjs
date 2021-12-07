@@ -6,7 +6,14 @@
 	}
 } 
   
-Start = StartSelect / StartCreate
+Start = StartSelect / StartCreate / StartInsert
+
+StartInsert = insert:InsertStmt
+	{
+    let resultArray = [];
+    resultArray = resultArray.concat(insert);
+    return resultArray;
+    }
 
 StartCreate = create:CreateStmt createColumn:(CreateColumnStmt*)? craeateForeignKey:(CreateForeignKeyStmt*)? _ ")"
 	{
@@ -61,6 +68,26 @@ AndOrStmt
   = OrStmt 
   / AndStmt
 
+InsertStmt
+  = _ "INSERT INTO"i  	
+    _ x:SelectField
+    _ "("
+    _ x1:SelectField x2:SelectFieldRest*
+    _ ")"
+    _ "VALUES"i
+    _ "("
+    _ x3:SelectField x4:SelectFieldRest*
+    _ ")"
+     {     
+    return {    
+      type: "INSERT INTO",
+      selectField1: x,
+      mainTable: x,
+      selectFields1: [x1].concat(x2),
+      selectFields2: [x3].concat(x4)
+      };
+  }
+  
 CreateStmt
   = _ "CREATE TABLE"i  	
     _ x:SelectField
