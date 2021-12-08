@@ -6,8 +6,20 @@
 	}
 } 
   
-Start = StartSelect / StartCreate / StartInsert / StartUpdate / StartDelete / StartDrop
+Start = StartSelect / StartCreate / StartInsert / StartUpdate / StartDelete / StartDrop / StartAlter
 
+StartAlter = alter:AlterStmt drop:(AlterDropStmt)? renameTable:(AlterRenameTableStmt)? renameColumn:(AlterRenameColumnStmt)? 
+addColumn:(AlterAddColumnStmt)?
+	{
+    let resultArray = [];
+    resultArray = resultArray.concat(alter);
+    if(drop != null)resultArray = resultArray.concat(drop);
+    if(renameTable != null)resultArray = resultArray.concat(renameTable);
+    if(renameColumn != null)resultArray = resultArray.concat(renameColumn);
+    if(addColumn != null)resultArray = resultArray.concat(addColumn);
+    return resultArray;
+    }
+    
 StartUpdate = update:UpdateStmt where:(WhereStmt*)? andOr:(AndOrStmt*)?
 	{
     let resultArray = [];
@@ -145,12 +157,67 @@ DropStmt
     _ x:SelectField
      {     
     return {    
-      type: "DELETE FROM",
+      type: "DROP TABLE",
       selectField: x,      
       mainTable: x
       };
   }
   
+  AlterStmt
+  = _ "ALTER TABLE"i  	
+    _ x:SelectField
+     {     
+    return {    
+      type: "ALTER TABLE",
+      selectField: x,      
+      mainTable: x
+      };
+  }
+  
+ AlterDropStmt
+  = _ "DROP COLUMN"i  	
+    _ x:SelectField
+     {     
+    return {    
+      type: "ALTER DROP COLUMN",
+      selectField: x,      
+      };
+  }
+
+ AlterRenameTableStmt
+  = _ "RENAME TO"i  	
+    _ x:SelectField
+     {     
+    return {    
+      type: "ALTER RENAME TABLE",
+      selectField: x,      
+      };
+ }
+ 
+ AlterRenameColumnStmt
+  = _ "RENAME"i !"TO"i
+    _ x:SelectField
+    _ "TO"i
+    _ x1:SelectField
+     {     
+    return {    
+      type: "ALTER RENAME COLUMN",
+      selectField1: x,
+      selectField2: x1, 
+      };
+  }
+ 
+ AlterAddColumnStmt
+  = _ "ADD COLUMN"i  	
+    _ x:SelectField _ x1:DatatypeTokens
+     {     
+    return {    
+      type: "ALTER ADD COLUMN",
+      selectField: x,
+      datatype: x1
+      };
+ }
+ 
 DeleteStmt
   = _ "DELETE FROM"i  	
     _ x:SelectField

@@ -125,6 +125,26 @@
                     "query": "DROP TABLE lehrer_schule"
                 }
             ]
+        },
+        {
+            "name": "ALTER",
+            "queries": [
+                {
+                    "query": "ALTER TABLE klassen"
+                },
+                {
+                    "query": "ALTER TABLE klassen DROP COLUMN name"
+                },
+                {
+                    "query": "ALTER TABLE klassen RENAME TO 'klassen_neu'"
+                },
+                {
+                    "query": "ALTER TABLE klassen RENAME name TO 'klassenname'"
+                },
+                {
+                    "query": "ALTER TABLE klassen ADD COLUMN 'klassenart' INTEGER"
+                }
+            ]
         }
     ]
 }
