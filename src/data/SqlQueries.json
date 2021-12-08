@@ -100,6 +100,32 @@
                     "query": "UPDATE lehrer SET vorname  =  'Richi'\nWHERE id < '6' AND vorname LIKE 'A%' OR nachname = 'Müller'"
                 }
             ]
+        },
+        {
+            "name": "DELETE",
+            "queries": [
+                {
+                    "query": "DELETE FROM lehrer"
+                },
+                {
+                    "query": "DELETE FROM lehrer\nwhere id = 10"
+                },
+                {
+                    "query": "DELETE FROM lehrer\nwhere id < 10 and vorname like 'An%'"
+                }
+            ]
+        },
+        {
+            "name": "DROP",
+            "queries": [
+                {
+                    "query": "DROP TABLE lehrer"
+                },
+                {
+                    "query": "DROP TABLE lehrer_schule"
+                }
+            ]
         }
     ]
 }
+

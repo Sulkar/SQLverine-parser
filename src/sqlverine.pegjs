@@ -6,7 +6,7 @@
 	}
 } 
   
-Start = StartSelect / StartCreate / StartInsert / StartUpdate
+Start = StartSelect / StartCreate / StartInsert / StartUpdate / StartDelete / StartDrop
 
 StartUpdate = update:UpdateStmt where:(WhereStmt*)? andOr:(AndOrStmt*)?
 	{
@@ -21,6 +21,26 @@ StartUpdate = update:UpdateStmt where:(WhereStmt*)? andOr:(AndOrStmt*)?
     return resultArray;
     }
 
+StartDelete = del:DeleteStmt where:(WhereStmt*)? andOr:(AndOrStmt*)?
+	{
+    let resultArray = [];
+    resultArray = resultArray.concat(del);
+    where.forEach((where) =>{
+      resultArray = resultArray.concat(where);
+    });
+    andOr.forEach((andOr) =>{
+      resultArray = resultArray.concat(andOr);
+    });
+    return resultArray;
+    }
+
+StartDrop = drop:DropStmt
+	{
+    let resultArray = [];
+    resultArray = resultArray.concat(drop);
+    return resultArray;
+    }
+    
 StartInsert = insert:InsertStmt
 	{
     let resultArray = [];
@@ -117,6 +137,28 @@ UpdateStmt
       selectField1: x,
       mainTable: x,
       updates: updates
+      };
+  }
+
+DropStmt
+  = _ "DROP TABLE"i  	
+    _ x:SelectField
+     {     
+    return {    
+      type: "DELETE FROM",
+      selectField: x,      
+      mainTable: x
+      };
+  }
+  
+DeleteStmt
+  = _ "DELETE FROM"i  	
+    _ x:SelectField
+     {     
+    return {    
+      type: "DELETE FROM",
+      selectField: x,      
+      mainTable: x
       };
   }
   
