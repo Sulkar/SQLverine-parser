@@ -19,7 +19,7 @@
                     "query": "SELECT id, vorname AS 'Rufname', MAX(geburtsdatum) AS maxxi, COUNT(klasse.id) FROM schueler"
                 },
                 {
-                    "query": "SELECT id, LENGTH(vorname) AS 'Vorname Laenge', MAX(geburtsdatum) AS max, COUNT(klasse.id), UPPER(nachname) FROM schueler"
+                    "query": "SELECT id, LENGTH(vorname) AS 'Vorname Laenge', MAX(geburtsdatum) AS max, COUNT(id), UPPER(nachname) FROM schueler"
                 },
                 {
                     "query": "SELECT LENGTH(vorname), SUBSTR('strasse','1','4') AS 'Teil von Strasse' FROM schueler"

@@ -210,34 +210,7 @@ document.querySelector('#btnParseAll').addEventListener("click", function () {
 });
 
 
-/* 
-  In eigene Klasse: AstToSqlVerine.js auslagern.
-*/
-function astToSqlVerine(ast) {
 
-
-}
-
-function createSelect(selectAst) {
-  /* let from = selectAst.from;
-   let columns = selectAst.columns;
-   columns.forEach(column => {
-
-     column.forEach((item, index) => {
-       if (item.type == "COLUMN") {
-         console.log("Column: " + item.value);
-       } else if (item.type == "AS") {
-         console.log("AS new column: " + item.columns.value);
-       } else if (item.type == "AGGREGAT") {
-         console.log("Aggregat: " + item.aggregat);
-         console.log("Aggregat Column: " + item.columns.value);
-       }
-     });
-
-   });
-   console.log("Table: " + from.value);
-   */
-}
 
 class AstToSqlVerine {
   constructor(ast) {
@@ -259,6 +232,11 @@ class AstToSqlVerine {
           this.createSelect(element, currentCodeline);
           break;
 
+        case "CREATE TABLE":
+          currentCodeline = this.createCodeline();
+          this.outputContainer.append(currentCodeline);
+          this.createCreateTable(element, currentCodeline);         
+          break;
         default:
           console.log("Element of type " + element.type + " canot be parsed.");
 
@@ -274,7 +252,7 @@ class AstToSqlVerine {
 
     const spanSelect = document.createElement("span");
     spanSelect.innerHTML = "SELECT";
-    spanSelect.classList.add(this.getNextCodeElement(),  "btnSelect", "synSQL", "sqlSelect", "start", "parent", "sqlIdentifier");
+    spanSelect.classList.add(this.getNextCodeElement(), "btnSelect", "synSQL", "sqlSelect", "start", "parent", "sqlIdentifier");
     spanSelect.setAttribute("data-sql-element", "SELECT");
 
     element.selectFields.forEach((selectField, idx) => {
@@ -289,7 +267,7 @@ class AstToSqlVerine {
 
         case "COLUMN":
 
-          const colSpan = this.createColumn(selectField, idx);
+          const colSpan = this.createColumn(selectField, idx, "SELECT_SELECT");
           spanSelect.append(colSpan);
           break;
         case "AS":
@@ -298,7 +276,7 @@ class AstToSqlVerine {
           break;
         case "AGGREGATE":
           const aggregateSpan = this.createAggregate(selectField, idx);
-            spanSelect.append(aggregateSpan);
+          spanSelect.append(aggregateSpan);
           break;
         case "STRING_FUNCTION":
 
@@ -328,98 +306,135 @@ class AstToSqlVerine {
 
   }
 
- getTableFromColumn(selectField){
-  let tableName =undefined;
-  if(selectField.value!= undefined && selectField.value.split('.').length>1){
-    
-    return selectField.value.split('.')[0];
-    
+  createCreateTable(element, currentCodeline) {
+
+    const spanCreateTable = document.createElement("span");
+    spanCreateTable.innerHTML = "CREATE TABLE";
+    spanCreateTable.classList.add(this.getNextCodeElement(), "synSQL", "start", "parent", "sqlIdentifier");
+    spanCreateTable.setAttribute("data-sql-element", "CREATE_TABLE");
+
+    spanCreateTable.append(this.createLeerzeichen());
+
+    //Inputfeld wird erstellt
+    const selectField = element.selectField;
+    const colSpan = this.createValue(selectField, 0, "CREATE_TABLE_1");
+    spanCreateTable.append(colSpan);
+
+    spanCreateTable.append(this.createLeerzeichen());
+    spanCreateTable.append("(");
+
+    currentCodeline.append(spanCreateTable);
+
+    /*
+      weitere codelines
+    */
+
+      //Ende ")"
+      const spanCreateTableEnd = document.createElement("span");
+      spanCreateTableEnd.innerHTML = ")";
+      spanCreateTableEnd.classList.add(this.getNextCodeElement(), "synSQL", "sqlIdentifier");
+      spanCreateTableEnd.setAttribute("data-sql-element", "CREATE_END_BRACKET");
+      currentCodeline.append(spanCreateTableEnd);
+    }
+
+  getTableFromColumn(selectField) {
+    let tableName = undefined;
+    if (selectField.value != undefined && selectField.value.split('.').length > 1) {
+
+      return selectField.value.split('.')[0];
+
+    }
+    return this.ast[0].mainTable.value;
   }
-  return this.ast[0].mainTable.value;
- }
 
   createTable(element, htmlToAppend) {
     htmlToAppend.append(this.createLeerzeichen());
 
     const spanFrom = document.createElement("span");
     spanFrom.innerHTML = element.from.value;
-    spanFrom.classList.add(this.getNextCodeElement(), "selTable", "synTables", "sqlIdentifier","inputField", "root");
+    spanFrom.classList.add(this.getNextCodeElement(), "selTable", "synTables", "sqlIdentifier", "inputField", "root");
     spanFrom.setAttribute("data-sql-element", "SELECT_FROM");
     htmlToAppend.append(spanFrom);
   }
 
-  createColumn(selectField, idx) {
+  createColumn(selectField, idx, sqlDataElement) {
 
-    const spanColumn = this.createSELECT_SELECT(idx);
+    const spanColumn = this.createInputField(idx);
+    spanColumn.setAttribute("data-sql-element", sqlDataElement);
     spanColumn.innerHTML = selectField.value;
     spanColumn.classList.add(this.getTableFromColumn(selectField), "selColumn", "synColumns");
     return spanColumn;
   }
 
-createSELECT_SELECT(idx){
-  const spanSelSel = document.createElement("span");
-  spanSelSel.setAttribute("data-sql-element", "SELECT_SELECT");
-  spanSelSel.classList.add(this.getNextCodeElement(), "sqlIdentifier", "inputField",);
-  if (idx > 0) {
-    spanSelSel.classList.add("extended");
-  } else {
-    spanSelSel.classList.add("root");
-  }
-  return spanSelSel;
-}
+  createValue(selectField, idx, sqlDataElement){
+    const spanValue = this.createInputField(idx);
+    spanValue.setAttribute("data-sql-element", sqlDataElement);
+    spanValue.innerHTML = "'" +  selectField.value + "'";
+    spanValue.classList.add("synValue", "inputValue");
+    return spanValue;
 
-  createAggregate(selectField, idx){
-    const spanAgg = this.createSELECT_SELECT(idx);
-    spanAgg.innerHTML = selectField.aggregate+"(";
+  }
+
+  createInputField(idx) {
+    const spanSelSel = document.createElement("span");
+    spanSelSel.classList.add(this.getNextCodeElement(), "sqlIdentifier", "inputField",);
+    if (idx > 0) {
+      spanSelSel.classList.add("extended");
+    } else {
+      spanSelSel.classList.add("root");
+    }
+    return spanSelSel;
+  }
+
+  createAggregate(selectField, idx) {
+    const spanAgg = this.createInputField(idx);
+    spanAgg.setAttribute("data-sql-element", "SELECT_SELECT");
+    spanAgg.innerHTML = selectField.aggregate + "(";
     spanAgg.classList.add("selAggregate", "synSQL", "sqlSelect");
 
     const innerSpan = document.createElement("span");
-    innerSpan.classList.add(this.getNextCodeElement(), this.getTableFromColumn(selectField.selectField), "selColumn", "synColumns", "sqlIdentifier","inputField", "root");
-    innerSpan.setAttribute("data-sql-element","SELECT_SELECT_AGGREGAT");
+    innerSpan.classList.add(this.getNextCodeElement(), this.getTableFromColumn(selectField.selectField), "selColumn", "synColumns", "sqlIdentifier", "inputField", "root");
+    innerSpan.setAttribute("data-sql-element", "SELECT_SELECT_AGGREGAT");
     innerSpan.innerHTML = selectField.selectField.value;
 
     spanAgg.append(innerSpan);
-    spanAgg.innerHTML+=")";
+    spanAgg.innerHTML += ")";
 
     return spanAgg;
   }
 
-  createAS(selectField, idx){
-    
+  createAS(selectField, idx) {
+
     let spanColumn;
 
-    if(selectField.selectField1.type=="COLUMN"){
-      spanColumn = this.createColumn(selectField.selectField1,idx);
+    if (selectField.selectField1.type == "COLUMN") {
+      spanColumn = this.createColumn(selectField.selectField1, idx, "SELECT_SELECT");
     }
-    if(selectField.selectField1.type=="AGGREGATE"){
-      spanColumn = this.createColumn(selectField.selectField1.selectField,idx);
+    if (selectField.selectField1.type == "AGGREGATE") {
+      spanColumn = this.createColumn(selectField.selectField1.selectField, idx, "SELECT_SELECT");
     }
-    if(selectField.selectField1.type=="STRING_FUNCTION"){
+    if (selectField.selectField1.type == "STRING_FUNCTION") {
 
       let selField;
       selectField.selectField1.selectFields.forEach((field) => {
 
-        if(field.type=="COLUMN"){
-          selField=field;
+        if (field.type == "COLUMN") {
+          selField = field;
         }
       });
-      console.log(selField);
-      spanColumn = this.createColumn(selField,idx);
+      spanColumn = this.createColumn(selField, idx, "SELECT_SELECT");
     }
 
     const innerSpan = document.createElement("span");
     innerSpan.classList.add(this.getNextCodeElement(), "btnAs", "synSQL", "sqlAs", "sqlIdentifier");
-    innerSpan.setAttribute("data-sql-element","AS");
+    innerSpan.setAttribute("data-sql-element", "AS");
     innerSpan.append(this.createLeerzeichen());
 
-    innerSpan.innerHTML+="AS";
+    innerSpan.innerHTML += "AS";
 
     innerSpan.append(this.createLeerzeichen());
 
-    const asSpan= document.createElement("span");
-    asSpan.classList.add(this.getNextCodeElement(), "inputField", "root", "sqlIdentifier", "input", "inputValue", "synValue");
-    asSpan.setAttribute("data-sql-element","AS_1");
-    asSpan.innerHTML= "'"+ selectField.selectField2.value+"'";
+    const asSpan = this.createValue(selectField.selectField2, idx, "AS_1");
 
     innerSpan.append(asSpan);
     spanColumn.append(innerSpan);
