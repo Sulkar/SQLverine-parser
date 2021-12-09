@@ -332,7 +332,7 @@ class AstToSqlVerine {
   let tableName =undefined;
   if(selectField.value!= undefined && selectField.value.split('.').length>1){
     
-    return selectField.split('.')[0];
+    return selectField.value.split('.')[0];
     
   }
   return this.ast[0].mainTable.value;
@@ -343,7 +343,7 @@ class AstToSqlVerine {
 
     const spanFrom = document.createElement("span");
     spanFrom.innerHTML = element.from.value;
-    spanFrom.classList.add(this.getNextCodeElement(), "selTable", "synTables", "sqlIdentifier", "root");
+    spanFrom.classList.add(this.getNextCodeElement(), "selTable", "synTables", "sqlIdentifier","inputField", "root");
     spanFrom.setAttribute("data-sql-element", "SELECT_FROM");
     htmlToAppend.append(spanFrom);
   }
@@ -359,7 +359,7 @@ class AstToSqlVerine {
 createSELECT_SELECT(idx){
   const spanSelSel = document.createElement("span");
   spanSelSel.setAttribute("data-sql-element", "SELECT_SELECT");
-  spanSelSel.classList.add(this.getNextCodeElement(), "sqlIdentifier");
+  spanSelSel.classList.add(this.getNextCodeElement(), "sqlIdentifier", "inputField",);
   if (idx > 0) {
     spanSelSel.classList.add("extended");
   } else {
@@ -374,7 +374,7 @@ createSELECT_SELECT(idx){
     spanAgg.classList.add("selAggregate", "synSQL", "sqlSelect");
 
     const innerSpan = document.createElement("span");
-    innerSpan.classList.add(this.getNextCodeElement(), this.getTableFromColumn(selectField.selectField), "selColumn", "synColumns", "sqlIdentifier", "root");
+    innerSpan.classList.add(this.getNextCodeElement(), this.getTableFromColumn(selectField.selectField), "selColumn", "synColumns", "sqlIdentifier","inputField", "root");
     innerSpan.setAttribute("data-sql-element","SELECT_SELECT_AGGREGAT");
     innerSpan.innerHTML = selectField.selectField.value;
 
