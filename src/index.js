@@ -194,7 +194,7 @@ document.querySelector('#btnParse').addEventListener("click", function () {
     //TODO: AST Objekt in SQLverine Codeblöcke umwandeln
     const astToSql = new AstToSqlVerine(outputAST);
     astToSql.parseAst();
-    sqlVerineEditor.fillCodeAreaWithCode(astToSql.outputContainer.innerHTML, astToSql.htmlElementCount);
+    sqlVerineEditor.fillCodeAreaWithCode(astToSql.getOutput(), astToSql.getElementCount());
 
   } catch (error) {
     outputParsedObjectTextarea.classList.add("errorColor");
@@ -216,8 +216,14 @@ class AstToSqlVerine {
   constructor(ast) {
     this.ast = ast;
     this.htmlElementCount = 0;
-    this.outputHTML = "";
     this.outputContainer = document.createElement("div");
+  }
+
+  getOutput(){
+    return this.outputContainer.innerHTML;
+  }
+  getElementCount(){
+    return this.htmlElementCount;
   }
 
   parseAst() {
@@ -228,15 +234,14 @@ class AstToSqlVerine {
 
         case "SELECT":
           currentCodeline = this.createCodeline();
-          this.outputContainer.append(currentCodeline);
           this.createSelect(element, currentCodeline);
           break;
 
         case "CREATE TABLE":
           currentCodeline = this.createCodeline();
-          this.outputContainer.append(currentCodeline);
-          this.createCreateTable(element, currentCodeline);         
+          this.createCreateTable(element, currentCodeline);                 
           break;
+
         default:
           console.log("Element of type " + element.type + " canot be parsed.");
 
@@ -334,7 +339,8 @@ class AstToSqlVerine {
       spanCreateTableEnd.innerHTML = ")";
       spanCreateTableEnd.classList.add(this.getNextCodeElement(), "synSQL", "sqlIdentifier");
       spanCreateTableEnd.setAttribute("data-sql-element", "CREATE_END_BRACKET");
-      currentCodeline.append(spanCreateTableEnd);
+      const endCodeline = this.createCodeline();
+      endCodeline.append(spanCreateTableEnd);
     }
 
   getTableFromColumn(selectField) {
@@ -450,12 +456,13 @@ class AstToSqlVerine {
     return spanLeerzeichen;
   }
 
-
   createCodeline() {
     const spanCodeline = document.createElement("span");
     spanCodeline.classList.add("codeline");
+    this.outputContainer.append(spanCodeline);
     return spanCodeline;
   }
+
   getNextCodeElement() {
     const codeElementWithNumber = "codeElement_" + this.htmlElementCount;
     this.htmlElementCount++;
