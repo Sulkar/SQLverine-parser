@@ -219,15 +219,18 @@ class AstToSqlVerine {
     this.outputContainer = document.createElement("div");
   }
 
-  getOutput(){
+  getOutput() {
     return this.outputContainer.innerHTML;
   }
-  getElementCount(){
+  getElementCount() {
     return this.htmlElementCount;
   }
 
   parseAst() {
-    this.ast.forEach(element => {
+    /* */
+    const astRows = this.ast.length;
+
+    this.ast.forEach((element, index) => {
 
       let currentCodeline;
       switch (element.type) {
@@ -239,7 +242,17 @@ class AstToSqlVerine {
 
         case "CREATE TABLE":
           currentCodeline = this.createCodeline();
-          this.createCreateTable(element, currentCodeline);                 
+          this.createCreateTable(element, currentCodeline);
+          break;
+
+        case "CREATE COLUMN":
+          let lastElement = true;
+          if (index < astRows - 1) {
+            lastElement = false;
+          }
+          currentCodeline = this.createCodeline();
+          this.createCreateColumn(element, currentCodeline, lastElement);
+
           break;
 
         default:
@@ -252,8 +265,6 @@ class AstToSqlVerine {
   };
 
   createSelect(element, currentCodeline) {
-
-
 
     const spanSelect = document.createElement("span");
     spanSelect.innerHTML = "SELECT";
@@ -330,18 +341,54 @@ class AstToSqlVerine {
 
     currentCodeline.append(spanCreateTable);
 
-    /*
-      weitere codelines
-    */
+    //Ende ")"
+    const spanCreateTableEnd = document.createElement("span");
+    spanCreateTableEnd.innerHTML = ")";
+    spanCreateTableEnd.classList.add(this.getNextCodeElement(), "synSQL", "sqlIdentifier");
+    spanCreateTableEnd.setAttribute("data-sql-element", "CREATE_END_BRACKET");
+    const endCodeline = this.createCodeline();
+    endCodeline.append(spanCreateTableEnd);
+  }
 
-      //Ende ")"
-      const spanCreateTableEnd = document.createElement("span");
-      spanCreateTableEnd.innerHTML = ")";
-      spanCreateTableEnd.classList.add(this.getNextCodeElement(), "synSQL", "sqlIdentifier");
-      spanCreateTableEnd.setAttribute("data-sql-element", "CREATE_END_BRACKET");
-      const endCodeline = this.createCodeline();
-      endCodeline.append(spanCreateTableEnd);
+  createCreateColumn(element, currentCodeline, lastElement) {
+
+    const spanCreateColumn = document.createElement("span");
+    spanCreateColumn.append(this.createLeerzeichen());
+    spanCreateColumn.append(this.createLeerzeichen());
+    spanCreateColumn.append(this.createLeerzeichen());
+    spanCreateColumn.classList.add(this.getNextCodeElement(), "synSQL", "parent", "sqlIdentifier");
+    spanCreateColumn.setAttribute("data-sql-element", "CREATE_COLUMN");
+
+    //Inputfeld wird erstellt
+    const selectField = element.selectField;
+    const colSpan = this.createValue(selectField, 0, "CREATE_COLUMN_1");
+    spanCreateColumn.append(colSpan);
+    spanCreateColumn.append(this.createLeerzeichen());
+
+    //Typfeld wird erstellt
+    const spanDatatype = this.createInputField(0);
+    spanDatatype.setAttribute("data-sql-element", "CREATE_COLUMN_2");
+    spanDatatype.innerHTML = element.datatype;
+    spanDatatype.classList.add("synTyp", "selTyp");
+    spanCreateColumn.append(spanDatatype);
+
+    //Constraintfeld wird erstellt
+    if (element.constraint != null) {
+      spanCreateColumn.append(this.createLeerzeichen());
+      const spanConstraint = this.createInputField(0);
+      spanConstraint.setAttribute("data-sql-element", "CREATE_COLUMN_3");
+      spanConstraint.innerHTML = element.constraint;
+      spanConstraint.classList.add("synTyp", "selConstraint");
+      spanCreateColumn.append(spanConstraint);
     }
+
+    //Kommt danach noch eine Zeile?
+    if (!lastElement) {
+      spanCreateColumn.append(this.createKomma());
+    }
+
+    currentCodeline.append(spanCreateColumn);
+  }
 
   getTableFromColumn(selectField) {
     let tableName = undefined;
@@ -372,14 +419,15 @@ class AstToSqlVerine {
     return spanColumn;
   }
 
-  createValue(selectField, idx, sqlDataElement){
+  createValue(selectField, idx, sqlDataElement) {
     const spanValue = this.createInputField(idx);
     spanValue.setAttribute("data-sql-element", sqlDataElement);
-    spanValue.innerHTML = "'" +  selectField.value + "'";
+    spanValue.innerHTML = "'" + selectField.value + "'";
     spanValue.classList.add("synValue", "inputValue");
     return spanValue;
 
   }
+
 
   createInputField(idx) {
     const spanSelSel = document.createElement("span");
@@ -449,11 +497,27 @@ class AstToSqlVerine {
 
   createLeerzeichen() {
     const spanLeerzeichen = document.createElement("span");
-    spanLeerzeichen.innerHTML = " ";
+    spanLeerzeichen.innerHTML = "&nbsp;";
     spanLeerzeichen.classList.add(this.getNextCodeElement(), "leerzeichen");
     spanLeerzeichen.setAttribute("data-goto-element", "parent");
 
     return spanLeerzeichen;
+  }
+  createKomma() {
+    const spanKomma = document.createElement("span");
+    spanKomma.innerHTML = ",";
+    spanKomma.classList.add(this.getNextCodeElement(), "komma");
+    spanKomma.setAttribute("data-goto-element", "parent");
+
+    return spanKomma;
+  }
+  createLeerzeichenMitKomma() {
+    const spanLeerzeichenKomma = document.createElement("span");
+    spanLeerzeichenKomma.innerHTML = ",&nbsp;";
+    spanLeerzeichenKomma.classList.add(this.getNextCodeElement(), "leerzeichen");
+    spanLeerzeichenKomma.setAttribute("data-goto-element", "parent");
+
+    return spanLeerzeichenKomma;
   }
 
   createCodeline() {
