@@ -297,7 +297,8 @@ class AstToSqlVerine {
           spanSelect.append(asSpan);
           break;
         case "AGGREGATE":
-
+          const aggregateSpan = this.createAggregate(selectField, idx);
+            spanSelect.append(aggregateSpan);
           break;
         case "STRING_FUNCTION":
 
@@ -328,8 +329,11 @@ class AstToSqlVerine {
   }
 
  getTableFromColumn(selectField){
-  if(selectField.value.split('.').length>1){
-    return selectField.value.split('.')[0];
+  let tableName =undefined;
+  if(selectField.value!= undefined && selectField.value.split('.').length>1){
+    
+    return selectField.split('.')[0];
+    
   }
   return this.ast[0].mainTable.value;
  }
@@ -339,33 +343,72 @@ class AstToSqlVerine {
 
     const spanFrom = document.createElement("span");
     spanFrom.innerHTML = element.from.value;
-    spanFrom.classList.add(this.getNextCodeElement(), "selTable", "synTables", "inputField", "sqlIdentifier", "root");
+    spanFrom.classList.add(this.getNextCodeElement(), "selTable", "synTables", "sqlIdentifier", "root");
     spanFrom.setAttribute("data-sql-element", "SELECT_FROM");
     htmlToAppend.append(spanFrom);
   }
 
   createColumn(selectField, idx) {
 
-    const spanColumn = document.createElement("span");
-
+    const spanColumn = this.createSELECT_SELECT(idx);
     spanColumn.innerHTML = selectField.value;
-    spanColumn.classList.add(this.getNextCodeElement(), this.getTableFromColumn(selectField), "selColumn", "synColumns", "inputField", "sqlIdentifier");
-    spanColumn.setAttribute("data-sql-element", "SELECT_SELECT");
-
-    if (idx > 0) {
-      spanColumn.classList.add("extended");
-    } else {
-      spanColumn.classList.add("root");
-    }
-
+    spanColumn.classList.add(this.getTableFromColumn(selectField), "selColumn", "synColumns");
     return spanColumn;
   }
 
-  createAS(selectField, idx){
-    const spanColumn = this.createColumn(selectField.selectField1,idx);
-    
+createSELECT_SELECT(idx){
+  const spanSelSel = document.createElement("span");
+  spanSelSel.setAttribute("data-sql-element", "SELECT_SELECT");
+  spanSelSel.classList.add(this.getNextCodeElement(), "sqlIdentifier");
+  if (idx > 0) {
+    spanSelSel.classList.add("extended");
+  } else {
+    spanSelSel.classList.add("root");
+  }
+  return spanSelSel;
+}
+
+  createAggregate(selectField, idx){
+    const spanAgg = this.createSELECT_SELECT(idx);
+    spanAgg.innerHTML = selectField.aggregate+"(";
+    spanAgg.classList.add("selAggregate", "synSQL", "sqlSelect");
+
     const innerSpan = document.createElement("span");
-    innerSpan.classList.add(this.getNextCodeElement(), "btnAs", "synSQL", "sqlAs", "sqlIdentifier", "inputFields");
+    innerSpan.classList.add(this.getNextCodeElement(), this.getTableFromColumn(selectField.selectField), "selColumn", "synColumns", "sqlIdentifier", "root");
+    innerSpan.setAttribute("data-sql-element","SELECT_SELECT_AGGREGAT");
+    innerSpan.innerHTML = selectField.selectField.value;
+
+    spanAgg.append(innerSpan);
+    spanAgg.innerHTML+=")";
+
+    return spanAgg;
+  }
+
+  createAS(selectField, idx){
+    
+    let spanColumn;
+
+    if(selectField.selectField1.type=="COLUMN"){
+      spanColumn = this.createColumn(selectField.selectField1,idx);
+    }
+    if(selectField.selectField1.type=="AGGREGATE"){
+      spanColumn = this.createColumn(selectField.selectField1.selectField,idx);
+    }
+    if(selectField.selectField1.type=="STRING_FUNCTION"){
+
+      let selField;
+      selectField.selectField1.selectFields.forEach((field) => {
+
+        if(field.type=="COLUMN"){
+          selField=field;
+        }
+      });
+      console.log(selField);
+      spanColumn = this.createColumn(selField,idx);
+    }
+
+    const innerSpan = document.createElement("span");
+    innerSpan.classList.add(this.getNextCodeElement(), "btnAs", "synSQL", "sqlAs", "sqlIdentifier");
     innerSpan.setAttribute("data-sql-element","AS");
     innerSpan.append(this.createLeerzeichen());
 
