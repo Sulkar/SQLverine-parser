@@ -253,11 +253,9 @@ class AstToSqlVerine {
 
           if (lastElement) {
             const lastCreateBracket = this.createCodeline();
-            const spanCreateTableEnd = document.createElement("span");
-            spanCreateTableEnd.innerHTML = ")";
-            spanCreateTableEnd.classList.add(this.getNextCodeElement(), "synSQL", "sqlIdentifier");
-            spanCreateTableEnd.setAttribute("data-sql-element", "CREATE_END_BRACKET");
-            lastCreateBracket.append(spanCreateTableEnd);
+            const klammerRechts = this.createKlammer(")");
+            klammerRechts.removeAttribute("data-goto-element");
+            lastCreateBracket.append(klammerRechts);
           }
           break;
 
@@ -345,7 +343,7 @@ class AstToSqlVerine {
     spanCreateTable.append(colSpan);
 
     spanCreateTable.append(this.createLeerzeichen());
-    spanCreateTable.append("(");
+    spanCreateTable.append(this.createKlammer("("));
 
     currentCodeline.append(spanCreateTable);
   }
@@ -423,7 +421,7 @@ class AstToSqlVerine {
     const spanValue = this.createInputField(idx);
     spanValue.setAttribute("data-sql-element", sqlDataElement);
     spanValue.innerHTML = "'" + selectField.value + "'";
-    spanValue.classList.add("synValue", "inputValue");
+    spanValue.classList.add("synValues", "inputValue");
     return spanValue;
 
   }
@@ -518,6 +516,19 @@ class AstToSqlVerine {
     spanLeerzeichenKomma.setAttribute("data-goto-element", "parent");
 
     return spanLeerzeichenKomma;
+  }
+  createKlammer(klammerAlsString) {
+    const spanKlammer = document.createElement("span");    
+    spanKlammer.classList.add(this.getNextCodeElement(), "sqlIdentifier", "synBrackets");
+    spanKlammer.setAttribute("data-goto-element", "parent");
+    spanKlammer.innerHTML = klammerAlsString;
+    if(klammerAlsString.includes("(")){      
+      spanKlammer.setAttribute("data-sql-element", "LEFTBRACKET");
+    }else{
+      spanKlammer.setAttribute("data-sql-element", "RIGHTBRACKET");
+    }
+
+    return spanKlammer;
   }
 
   createCodeline() {
