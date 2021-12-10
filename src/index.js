@@ -228,8 +228,6 @@ class AstToSqlVerine {
 
   parseAst() {
     /* */
-    const astRows = this.ast.length;
-
     this.ast.forEach((element, index) => {
 
       let currentCodeline;
@@ -246,14 +244,24 @@ class AstToSqlVerine {
           break;
 
         case "CREATE COLUMN":
-          let lastElement = true;
-          if (index < astRows - 1) {
-            lastElement = false;
+          let lastElement = false;
+          if (this.ast[index + 1] == undefined) { //letztes Element
+            lastElement = true;
           }
           currentCodeline = this.createCodeline();
           this.createCreateColumn(element, currentCodeline, lastElement);
 
+          if (lastElement) {
+            const lastCreateBracket = this.createCodeline();
+            const spanCreateTableEnd = document.createElement("span");
+            spanCreateTableEnd.innerHTML = ")";
+            spanCreateTableEnd.classList.add(this.getNextCodeElement(), "synSQL", "sqlIdentifier");
+            spanCreateTableEnd.setAttribute("data-sql-element", "CREATE_END_BRACKET");
+            lastCreateBracket.append(spanCreateTableEnd);
+          }
           break;
+
+
 
         default:
           console.log("Element of type " + element.type + " canot be parsed.");
@@ -340,14 +348,6 @@ class AstToSqlVerine {
     spanCreateTable.append("(");
 
     currentCodeline.append(spanCreateTable);
-
-    //Ende ")"
-    const spanCreateTableEnd = document.createElement("span");
-    spanCreateTableEnd.innerHTML = ")";
-    spanCreateTableEnd.classList.add(this.getNextCodeElement(), "synSQL", "sqlIdentifier");
-    spanCreateTableEnd.setAttribute("data-sql-element", "CREATE_END_BRACKET");
-    const endCodeline = this.createCodeline();
-    endCodeline.append(spanCreateTableEnd);
   }
 
   createCreateColumn(element, currentCodeline, lastElement) {
