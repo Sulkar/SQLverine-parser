@@ -31,6 +31,11 @@ export class AstToSqlVerine {
                     this.createCreateTable(element, currentCodeline);
                     break;
 
+                case "INSERT INTO":
+                    currentCodeline = this.createCodeline();
+                    this.createInsert(element, currentCodeline);
+                    break;
+
                 case "CREATE COLUMN":
                     let lastElement = false;
                     if (this.ast[index + 1] == undefined) { //letztes Element
@@ -106,21 +111,20 @@ export class AstToSqlVerine {
         spanFrom.setAttribute("data-goto-element", "parent");
         spanFrom.classList.add(this.getNextCodeElement());
         spanSelect.append(spanFrom);
-        this.createTable(element, spanSelect);
 
+        spanSelect.append(this.createLeerzeichen());
 
-        // // mein handy hat keinen Akku mehr LOL :-D
+        const tableSpan = this.createTable(element.from, 0, "SELECT_FROM");
+        spanSelect.append(tableSpan);
 
         currentCodeline.append(spanSelect);
-
-
     }
 
     createCreateTable(element, currentCodeline) {
 
         const spanCreateTable = document.createElement("span");
         spanCreateTable.innerHTML = "CREATE TABLE";
-        spanCreateTable.classList.add(this.getNextCodeElement(), "synSQL", "start", "parent", "sqlIdentifier");
+        spanCreateTable.classList.add(this.getNextCodeElement(), "synSQL", "parent", "sqlIdentifier");
         spanCreateTable.setAttribute("data-sql-element", "CREATE_TABLE");
 
         spanCreateTable.append(this.createLeerzeichen());
@@ -134,6 +138,60 @@ export class AstToSqlVerine {
         spanCreateTable.append(this.createKlammer("("));
 
         currentCodeline.append(spanCreateTable);
+    }
+
+    createInsert(element, currentCodeline) {
+        //element group numbers werden für das Löschen voneinander abhängigen Felder benötigt
+        let elementGroupNumbers = [];
+
+        const spanCreateInsert = document.createElement("span");
+        spanCreateInsert.innerHTML = "INSERT INTO";
+        spanCreateInsert.classList.add(this.getNextCodeElement(), "synSQL", "parent", "sqlIdentifier");
+        spanCreateInsert.setAttribute("data-sql-element", "INSERT");
+
+        spanCreateInsert.append(this.createLeerzeichen());
+
+        //Column wird erstellt: INSERT INTO ___
+        const selectField = element.selectField1;
+        const tableSpan = this.createTable(selectField, 0, "INSERT_1");
+        spanCreateInsert.append(tableSpan);
+
+        //INSERT INTO ___ (___)
+        spanCreateInsert.append(this.createLeerzeichen());
+        spanCreateInsert.append(this.createKlammer("(")); 
+        element.selectFields1.forEach((selectField, index) => {
+            if(index > 0){
+                const leerzeichenMitKomma = this.createLeerzeichenMitKomma()
+                spanCreateInsert.append(leerzeichenMitKomma);
+                elementGroupNumbers.push(this.getCodeElementNumber(leerzeichenMitKomma));
+            }
+            const colSpan = this.createColumn(selectField, index, "INSERT_2");
+            if(elementGroupNumbers.length > 0){
+                colSpan.setAttribute("data-element-group", elementGroupNumbers[index-1]); //temporär 
+            }            
+            spanCreateInsert.append(colSpan);
+        });
+            
+        //...
+        spanCreateInsert.append(this.createKlammer(")"));
+
+        //INSERT INTO ___ (___) VALUES
+        spanCreateInsert.append(this.createLeerzeichen());
+        const spanValues = document.createElement("span");
+        spanValues.innerHTML = "VALUES";
+        spanValues.setAttribute("data-goto-element", "parent");
+        spanValues.classList.add(this.getNextCodeElement());
+        spanCreateInsert.append(spanValues);
+
+        //INSERT INTO ___ (___) VALUES (___)
+        spanCreateInsert.append(this.createLeerzeichen());
+        spanCreateInsert.append(this.createKlammer("("));        
+            const valSpan1 = this.createValue(element.selectFields2[0], 0, "INSERT_3"); //erste column 0 = root
+            spanCreateInsert.append(valSpan1);
+        //...
+        spanCreateInsert.append(this.createKlammer(")"));
+
+        currentCodeline.append(spanCreateInsert);
     }
 
     createCreateColumn(element, currentCodeline, lastElement) {
@@ -172,32 +230,25 @@ export class AstToSqlVerine {
         if (!lastElement) {
             spanCreateColumn.append(this.createKomma());
         }
-
         currentCodeline.append(spanCreateColumn);
     }
 
     getTableFromColumn(selectField) {
-        let tableName = undefined;
         if (selectField.value != undefined && selectField.value.split('.').length > 1) {
-
             return selectField.value.split('.')[0];
-
         }
         return this.ast[0].mainTable.value;
     }
 
-    createTable(element, htmlToAppend) {
-        htmlToAppend.append(this.createLeerzeichen());
-
-        const spanFrom = document.createElement("span");
-        spanFrom.innerHTML = element.from.value;
-        spanFrom.classList.add(this.getNextCodeElement(), "selTable", "synTables", "sqlIdentifier", "inputField", "root");
-        spanFrom.setAttribute("data-sql-element", "SELECT_FROM");
-        htmlToAppend.append(spanFrom);
+    createTable(selectField, idx, sqlDataElement) {
+        const spanColumn = this.createInputField(idx);
+        spanColumn.setAttribute("data-sql-element", sqlDataElement);
+        spanColumn.innerHTML = selectField.value;
+        spanColumn.classList.add("selTable", "synTables");
+        return spanColumn;
     }
 
     createColumn(selectField, idx, sqlDataElement) {
-
         const spanColumn = this.createInputField(idx);
         spanColumn.setAttribute("data-sql-element", sqlDataElement);
         spanColumn.innerHTML = selectField.value;
@@ -330,6 +381,17 @@ export class AstToSqlVerine {
         const codeElementWithNumber = "codeElement_" + this.htmlElementCount;
         this.htmlElementCount++;
         return codeElementWithNumber;
+    }
+
+    //function: gibt die Element Nummer aus dem Classname zurück. Z.B.: codeElement_4 -> 4
+    getCodeElementNumber(codeElement) {
+        let elementNumber;
+        codeElement.classList.forEach(classname => {
+            if(classname.includes("codeElement_")){                
+                elementNumber = classname.split("_")[1];
+            };
+        });
+        return elementNumber;
     }
 
 }

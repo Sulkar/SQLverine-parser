@@ -196,15 +196,21 @@ document.querySelector('#btnParse').addEventListener("click", function () {
     const outputAstStringify = JSON.stringify(outputAST, null, 4);
     outputParsedObjectTextarea.value = outputAstStringify;
 
-    //TODO: AST Objekt in SQLverine Codeblöcke umwandeln
-    const astToSql = new AstToSqlVerine(outputAST);
-    astToSql.parseAst();
-    sqlVerineEditor.fillCodeAreaWithCode(astToSql.getOutput(), astToSql.getElementCount());
+    try {
+      //TODO: AST Objekt in SQLverine Codeblöcke umwandeln
+      const astToSql = new AstToSqlVerine(outputAST);
+      astToSql.parseAst();
+      sqlVerineEditor.fillCodeAreaWithCode(astToSql.getOutput(), astToSql.getElementCount());
+    } catch (error) {
+      console.log("Error: astToSql");
+      console.log(error);
+    }
 
   } catch (error) {
     outputParsedObjectTextarea.classList.add("errorColor");
     outputParsedObjectTextarea.value = "Fehler beim Parsen des Queries.\nSiehe Konsole für weitere Informationen.\n\n";
     outputParsedObjectTextarea.value += JSON.stringify(error, null, 4);
+    console.log("Error: Parser");
     console.log(error);
   }
 });
