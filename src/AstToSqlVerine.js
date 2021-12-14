@@ -94,8 +94,10 @@ export class AstToSqlVerine {
                     spanSelect.append(aggregateSpan);
                     break;
                 case "STRING_FUNCTION":
-
+                    const stringFunctionSpan = this.createStringFunction(selectField,idx);
+                    spanSelect.append(stringFunctionSpan);
                     break;
+                    
 
                 default:
                     console.log("Selectfield of type " + selectField.type + " canot be parsed.");
@@ -294,6 +296,54 @@ export class AstToSqlVerine {
         return spanAgg;
     }
 
+    createStringFunction(selectField,idx){
+        const spanStringFunc = this.createInputField(idx);
+        spanStringFunc.setAttribute("data-sql-element", "SELECT_SELECT");
+        spanStringFunc.innerHTML = selectField.string_function + "(";
+        spanStringFunc.classList.add("selStringFunction", "synSQL", "sqlSelect");
+
+        const stringFunction = selectField.string_function;
+
+        if(selectField.selectFields.length>1){
+           
+            selectField.selectFields.forEach((selField, index) => {
+                const innerSpan = document.createElement("span");
+                if(index<1){
+                    innerSpan.setAttribute("data-sql-element", "SELECT_SELECT_"+stringFunction+"_FUNCTION_1");
+                    innerSpan.innerHTML = selField.value;
+                    innerSpan.classList.add(this.getNextCodeElement(), this.getTableFromColumn(selField), 
+                        "selColumn", "synColumns", "sqlIdentifier", "inputField", "root");
+                    spanStringFunc.append(innerSpan);
+                }else{
+                    innerSpan.setAttribute("data-sql-element", "SELECT_SELECT_"+stringFunction+"_FUNCTION_2");
+
+                    innerSpan.classList.add(this.getNextCodeElement(),
+                    "synValue", "sqlIdentifier", "inputValue", "inputField", "root");
+
+                    if(index==1){
+                        innerSpan.classList.add("root");
+                    }else{
+                        innerSpan.classList.add("extended", "comma");
+                    }
+
+                    innerSpan.innerHTML = selField.value;
+                    spanStringFunc.append(this.createLeerzeichenMitKomma());
+                    spanStringFunc.append(innerSpan);
+                }
+            });
+
+
+        }else if(selectField.selectFields.length==1){
+            const innerSpan = document.createElement("span");
+            innerSpan.setAttribute("data-sql-element", "SELECT_SELECT_"+stringFunction+"_FUNCTION");
+            innerSpan.innerHTML = selectField.selectFields[0].value;
+            innerSpan.classList.add(this.getNextCodeElement(), this.getTableFromColumn(selectField.selectFields[0]), "selColumn", "synColumns", "sqlIdentifier", "inputField", "root");
+            spanStringFunc.append(innerSpan);
+        }
+        spanStringFunc.innerHTML += ")";
+        return spanStringFunc;
+    }
+
     createAS(selectField, idx) {
 
         let spanColumn;
@@ -302,10 +352,10 @@ export class AstToSqlVerine {
             spanColumn = this.createColumn(selectField.selectField1, idx, "SELECT_SELECT");
         }
         if (selectField.selectField1.type == "AGGREGATE") {
-            spanColumn = this.createColumn(selectField.selectField1.selectField, idx, "SELECT_SELECT");
+            spanColumn = this.createAggregate(selectField.selectField1, idx);
         }
         if (selectField.selectField1.type == "STRING_FUNCTION") {
-
+/*
             let selField;
             selectField.selectField1.selectFields.forEach((field) => {
 
@@ -314,6 +364,8 @@ export class AstToSqlVerine {
                 }
             });
             spanColumn = this.createColumn(selField, idx, "SELECT_SELECT");
+            */
+           spanColumn = this.createStringFunction(selectField.selectField1, idx);
         }
 
         const innerSpan = document.createElement("span");
