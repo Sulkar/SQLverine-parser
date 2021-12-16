@@ -166,7 +166,6 @@ export class AstToSqlVerine {
                 spanCreateInsert.append(leerzeichenMitKomma);
             }
             const colSpan = this.createColumn(selectField, index, "INSERT_2");
-
             //element group numbers werden für das Löschen voneinander abhängigen Felder benötigt
             if (index > 0) {
                 const elementGroupNumbers = this.getElementGroupNumbers(colSpan, numberOfValues, "insertColumn");
@@ -174,7 +173,6 @@ export class AstToSqlVerine {
             }
             spanCreateInsert.append(colSpan);
         });
-
         //...
         spanCreateInsert.append(this.createKlammer(")"));
 
@@ -189,7 +187,6 @@ export class AstToSqlVerine {
         //INSERT INTO ___ (___) VALUES (___)
         spanCreateInsert.append(this.createLeerzeichen());
         spanCreateInsert.append(this.createKlammer("("));
-
         element.selectFields2.forEach((selectField, index) => {
             if (index > 0) {
                 const leerzeichenMitKomma = this.createLeerzeichenMitKomma()
@@ -206,7 +203,6 @@ export class AstToSqlVerine {
 
         //...
         spanCreateInsert.append(this.createKlammer(")"));
-
         currentCodeline.append(spanCreateInsert);
     }
 
@@ -219,8 +215,8 @@ export class AstToSqlVerine {
             selectFieldNumber = 4 + numberOfValues * 2;
         } else if (type == "insertValue") {
             //Erstellt die passenden Nummern des INSERT INTO (___, ___, ...) Kommas und InputFields
-            kommaNumber = (5 + numberOfValues * 2) * -1;
-            selectFieldNumber = (6 + numberOfValues * 2) * -1;
+            kommaNumber = (4 + numberOfValues * 2) * -1;
+            selectFieldNumber = (5 + numberOfValues * 2) * -1;
         }
         const colSpanElementNumber = this.getCodeElementNumber(currentElement);
         const colSpanKommaBefore = colSpanElementNumber - 1;
