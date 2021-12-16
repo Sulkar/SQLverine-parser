@@ -75,6 +75,9 @@
                 },
                 {
                     "query": "INSERT INTO lehrer (id, vorname) VALUES ('5', 'Richi')"
+                },
+                {
+                    "query": "INSERT INTO lehrer (id, vorname, besoldung) VALUES ('5', 'Richi', 'A13')"
                 }
             ]
         },

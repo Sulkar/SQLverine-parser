@@ -94,10 +94,10 @@ export class AstToSqlVerine {
                     spanSelect.append(aggregateSpan);
                     break;
                 case "STRING_FUNCTION":
-                    const stringFunctionSpan = this.createStringFunction(selectField,idx);
+                    const stringFunctionSpan = this.createStringFunction(selectField, idx);
                     spanSelect.append(stringFunctionSpan);
                     break;
-                    
+
 
                 default:
                     console.log("Selectfield of type " + selectField.type + " canot be parsed.");
@@ -143,8 +143,7 @@ export class AstToSqlVerine {
     }
 
     createInsert(element, currentCodeline) {
-        //element group numbers werden für das Löschen voneinander abhängigen Felder benötigt
-        let elementGroupNumbers = [];
+        const numberOfValues = element.selectFields1.length;
 
         const spanCreateInsert = document.createElement("span");
         spanCreateInsert.innerHTML = "INSERT INTO";
@@ -160,20 +159,22 @@ export class AstToSqlVerine {
 
         //INSERT INTO ___ (___)
         spanCreateInsert.append(this.createLeerzeichen());
-        spanCreateInsert.append(this.createKlammer("(")); 
+        spanCreateInsert.append(this.createKlammer("("));
         element.selectFields1.forEach((selectField, index) => {
-            if(index > 0){
+            if (index > 0) {
                 const leerzeichenMitKomma = this.createLeerzeichenMitKomma()
                 spanCreateInsert.append(leerzeichenMitKomma);
-                elementGroupNumbers.push(this.getCodeElementNumber(leerzeichenMitKomma));
             }
             const colSpan = this.createColumn(selectField, index, "INSERT_2");
-            if(elementGroupNumbers.length > 0){
-                colSpan.setAttribute("data-element-group", elementGroupNumbers[index-1]); //temporär 
-            }            
+
+            //element group numbers werden für das Löschen voneinander abhängigen Felder benötigt
+            if (index > 0) {
+                const elementGroupNumbers = this.getElementGroupNumbers(colSpan, numberOfValues, "insertColumn");
+                colSpan.setAttribute("data-element-group", elementGroupNumbers);
+            }
             spanCreateInsert.append(colSpan);
         });
-            
+
         //...
         spanCreateInsert.append(this.createKlammer(")"));
 
@@ -187,13 +188,46 @@ export class AstToSqlVerine {
 
         //INSERT INTO ___ (___) VALUES (___)
         spanCreateInsert.append(this.createLeerzeichen());
-        spanCreateInsert.append(this.createKlammer("("));        
-            const valSpan1 = this.createValue(element.selectFields2[0], 0, "INSERT_3"); //erste column 0 = root
-            spanCreateInsert.append(valSpan1);
+        spanCreateInsert.append(this.createKlammer("("));
+
+        element.selectFields2.forEach((selectField, index) => {
+            if (index > 0) {
+                const leerzeichenMitKomma = this.createLeerzeichenMitKomma()
+                spanCreateInsert.append(leerzeichenMitKomma);
+            }
+            const valSpan = this.createValue(selectField, index, "INSERT_3"); //erste column 0 = root
+            //element group numbers werden für das Löschen voneinander abhängigen Felder benötigt
+            if (index > 0) {
+                const elementGroupNumbers = this.getElementGroupNumbers(valSpan, numberOfValues, "insertValue");
+                valSpan.setAttribute("data-element-group", elementGroupNumbers);
+            }
+            spanCreateInsert.append(valSpan);
+        });
+
         //...
         spanCreateInsert.append(this.createKlammer(")"));
 
         currentCodeline.append(spanCreateInsert);
+    }
+
+    getElementGroupNumbers(currentElement, numberOfValues, type) {
+        let kommaNumber;
+        let selectFieldNumber;
+        if (type == "insertColumn") {
+            //Erstellt die passenden Nummern der VALUES (___, ___, ...) Kommas und InputFields
+            kommaNumber = 3 + numberOfValues * 2;
+            selectFieldNumber = 4 + numberOfValues * 2;
+        } else if (type == "insertValue") {
+            //Erstellt die passenden Nummern des INSERT INTO (___, ___, ...) Kommas und InputFields
+            kommaNumber = (5 + numberOfValues * 2) * -1;
+            selectFieldNumber = (6 + numberOfValues * 2) * -1;
+        }
+        const colSpanElementNumber = this.getCodeElementNumber(currentElement);
+        const colSpanKommaBefore = colSpanElementNumber - 1;
+        const colSpanCorrespondingValueKomma = parseInt(colSpanElementNumber) + kommaNumber;
+        const colSpanCorrespondingValueInputField = parseInt(colSpanElementNumber) + selectFieldNumber;
+        const elementGroupNumbers = [colSpanKommaBefore, colSpanCorrespondingValueKomma, colSpanCorrespondingValueInputField];
+        return elementGroupNumbers;
     }
 
     createCreateColumn(element, currentCodeline, lastElement) {
@@ -296,7 +330,7 @@ export class AstToSqlVerine {
         return spanAgg;
     }
 
-    createStringFunction(selectField,idx){
+    createStringFunction(selectField, idx) {
         const spanStringFunc = this.createInputField(idx);
         spanStringFunc.setAttribute("data-sql-element", "SELECT_SELECT");
         spanStringFunc.innerHTML = selectField.string_function + "(";
@@ -304,25 +338,25 @@ export class AstToSqlVerine {
 
         const stringFunction = selectField.string_function;
 
-        if(selectField.selectFields.length>1){
-           
+        if (selectField.selectFields.length > 1) {
+
             selectField.selectFields.forEach((selField, index) => {
                 const innerSpan = document.createElement("span");
-                if(index<1){
-                    innerSpan.setAttribute("data-sql-element", "SELECT_SELECT_"+stringFunction+"_FUNCTION_1");
+                if (index < 1) {
+                    innerSpan.setAttribute("data-sql-element", "SELECT_SELECT_" + stringFunction + "_FUNCTION_1");
                     innerSpan.innerHTML = selField.value;
-                    innerSpan.classList.add(this.getNextCodeElement(), this.getTableFromColumn(selField), 
+                    innerSpan.classList.add(this.getNextCodeElement(), this.getTableFromColumn(selField),
                         "selColumn", "synColumns", "sqlIdentifier", "inputField", "root");
                     spanStringFunc.append(innerSpan);
-                }else{
-                    innerSpan.setAttribute("data-sql-element", "SELECT_SELECT_"+stringFunction+"_FUNCTION_2");
+                } else {
+                    innerSpan.setAttribute("data-sql-element", "SELECT_SELECT_" + stringFunction + "_FUNCTION_2");
 
                     innerSpan.classList.add(this.getNextCodeElement(),
-                    "synValue", "sqlIdentifier", "inputValue", "inputField", "root");
+                        "synValue", "sqlIdentifier", "inputValue", "inputField", "root");
 
-                    if(index==1){
+                    if (index == 1) {
                         innerSpan.classList.add("root");
-                    }else{
+                    } else {
                         innerSpan.classList.add("extended", "comma");
                     }
 
@@ -333,9 +367,9 @@ export class AstToSqlVerine {
             });
 
 
-        }else if(selectField.selectFields.length==1){
+        } else if (selectField.selectFields.length == 1) {
             const innerSpan = document.createElement("span");
-            innerSpan.setAttribute("data-sql-element", "SELECT_SELECT_"+stringFunction+"_FUNCTION");
+            innerSpan.setAttribute("data-sql-element", "SELECT_SELECT_" + stringFunction + "_FUNCTION");
             innerSpan.innerHTML = selectField.selectFields[0].value;
             innerSpan.classList.add(this.getNextCodeElement(), this.getTableFromColumn(selectField.selectFields[0]), "selColumn", "synColumns", "sqlIdentifier", "inputField", "root");
             spanStringFunc.append(innerSpan);
@@ -355,17 +389,17 @@ export class AstToSqlVerine {
             spanColumn = this.createAggregate(selectField.selectField1, idx);
         }
         if (selectField.selectField1.type == "STRING_FUNCTION") {
-/*
-            let selField;
-            selectField.selectField1.selectFields.forEach((field) => {
-
-                if (field.type == "COLUMN") {
-                    selField = field;
-                }
-            });
-            spanColumn = this.createColumn(selField, idx, "SELECT_SELECT");
-            */
-           spanColumn = this.createStringFunction(selectField.selectField1, idx);
+            /*
+                        let selField;
+                        selectField.selectField1.selectFields.forEach((field) => {
+            
+                            if (field.type == "COLUMN") {
+                                selField = field;
+                            }
+                        });
+                        spanColumn = this.createColumn(selField, idx, "SELECT_SELECT");
+                        */
+            spanColumn = this.createStringFunction(selectField.selectField1, idx);
         }
 
         const innerSpan = document.createElement("span");
@@ -439,7 +473,7 @@ export class AstToSqlVerine {
     getCodeElementNumber(codeElement) {
         let elementNumber;
         codeElement.classList.forEach(classname => {
-            if(classname.includes("codeElement_")){                
+            if (classname.includes("codeElement_")) {
                 elementNumber = classname.split("_")[1];
             };
         });
