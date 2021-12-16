@@ -19,6 +19,7 @@ export class AstToSqlVerine {
         this.ast.forEach((element, index) => {
 
             let currentCodeline;
+            let lastElement = false;
             switch (element.type) {
 
                 case "SELECT":
@@ -36,8 +37,7 @@ export class AstToSqlVerine {
                     this.createInsert(element, currentCodeline);
                     break;
 
-                case "CREATE COLUMN":
-                    let lastElement = false;
+                case "CREATE COLUMN": //für CREATE TABLE STATEMENT
                     if (this.ast[index + 1] == undefined) { //letztes Element
                         lastElement = true;
                     }
@@ -52,6 +52,20 @@ export class AstToSqlVerine {
                     }
                     break;
 
+                case "CREATE FOREIGN KEY": //für CREATE TABLE STATEMENT
+                    if (this.ast[index + 1] == undefined) { //letztes Element
+                        lastElement = true;
+                    }
+                    currentCodeline = this.createCodeline();
+                    this.createForeignKey(element, currentCodeline, lastElement);
+
+                    if (lastElement) {
+                        const lastCreateBracket = this.createCodeline();
+                        const klammerRechts = this.createKlammer(")");
+                        klammerRechts.removeAttribute("data-goto-element");
+                        lastCreateBracket.append(klammerRechts);
+                    }
+                    break;
 
 
                 default:
@@ -265,9 +279,57 @@ export class AstToSqlVerine {
         currentCodeline.append(spanCreateColumn);
     }
 
+    createForeignKey(element, currentCodeline, lastElement) {
+
+        const spanForeignKey = document.createElement("span");
+        spanForeignKey.append(this.createLeerzeichen());
+        spanForeignKey.append(this.createLeerzeichen());
+        spanForeignKey.append(this.createLeerzeichen());
+        spanForeignKey.classList.add(this.getNextCodeElement(), "synSQL", "parent", "sqlIdentifier");
+        spanForeignKey.setAttribute("data-sql-element", "CREATE_FOREIGN_KEY");
+        spanForeignKey.append("FOREIGN KEY");
+
+        spanForeignKey.append(this.createLeerzeichen());
+        spanForeignKey.append(this.createKlammer("("));
+
+        //Inputfeld 1 wird erstellt
+        const selectField1 = element.selectField1;
+        const colSpan1 = this.createColumn(selectField1, 0, "CREATE_FOREIGN_KEY_1");
+        spanForeignKey.append(colSpan1);
+        spanForeignKey.append(this.createKlammer(")"));
+        spanForeignKey.append(this.createLeerzeichen());
+        const spanReferences = document.createElement("span");
+        spanReferences.innerHTML = "REFERENCES";
+        spanReferences.setAttribute("data-goto-element", "parent");
+        spanReferences.classList.add(this.getNextCodeElement());
+        spanForeignKey.append(spanReferences);
+        spanForeignKey.append(this.createLeerzeichen());
+
+        //Inputfeld 2 wird erstellt
+        const selectField2 = element.selectField2;
+        const colSpan2 = this.createTable(selectField2, 0, "CREATE_FOREIGN_KEY_2");
+        spanForeignKey.append(colSpan2);
+        spanForeignKey.append(this.createKlammer("("));
+
+        //Inputfeld 3 wird erstellt
+        const selectField3 = element.selectField3;
+        const colSpan3 = this.createColumn(selectField3, 0, "CREATE_FOREIGN_KEY_3");
+        spanForeignKey.append(colSpan3);
+        spanForeignKey.append(this.createKlammer(")"));
+
+
+        //Kommt danach noch eine Zeile?
+        if (!lastElement) {
+            spanForeignKey.append(this.createKomma());
+        }
+        currentCodeline.append(spanForeignKey);
+    }
+
     getTableFromColumn(selectField) {
         if (selectField.value != undefined && selectField.value.split('.').length > 1) {
             return selectField.value.split('.')[0];
+        }else if(selectField.ownTable != undefined){
+            return selectField.ownTable;
         }
         return this.ast[0].mainTable.value;
     }

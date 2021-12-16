@@ -262,7 +262,8 @@ CreateColumnStmt =
     _ x2:SelectField
     _ ")"
     _ ","?
-     {     
+     {
+     x2.ownTable = x1.value;
     return {    
       type: "CREATE FOREIGN KEY",
       selectField1: x,
