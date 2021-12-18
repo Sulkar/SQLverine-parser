@@ -27,6 +27,11 @@ export class AstToSqlVerine {
                     this.createSelect(element, currentCodeline);
                     break;
 
+                case "WHERE":
+                    currentCodeline = this.createCodeline();
+                    this.createWhere(element,currentCodeline);
+                break;
+
                 case "CREATE TABLE":
                     currentCodeline = this.createCodeline();
                     this.createCreateTable(element, currentCodeline);
@@ -76,6 +81,57 @@ export class AstToSqlVerine {
 
         console.log(this.outputContainer.innerHTML);
     };
+
+    createWhere(element, currentCodeline){
+        const spanWhere = document.createElement("span");
+        spanWhere.innerHTML="WHERE";
+        spanWhere.classList.add(this.getNextCodeElement(), "btnWhere", "synSQL", "sqlWhere", "parent", "sqlIdentifier", "inputFields");
+        spanWhere.setAttribute("data-sql-element", "WHERE");
+        spanWhere.append(this.createLeerzeichen());
+        if(element.leftBracket==true){
+            spanWhere.append(this.createKlammer("("));
+        }
+
+        const condition=this.createCondition(element.conditions[0], "WHERE");
+        spanWhere.innerHTML+=condition;
+
+        if(element.rightBracket==true){
+            spanWhere.append(this.createKlammer(")"));
+        }
+  
+        currentCodeline.append(spanWhere);
+    }
+
+    createCondition(condition, parentType){
+        const spanConditionHolder = document.createElement("span");
+        let conditionCount=1;
+        if(parentType=="JOIN"){
+            conditionCount++;
+        }
+        const spanLeft=this.createColumn(condition.left, 0, parentType+"_"+conditionCount);
+        spanLeft.setAttribute("data-next-element", this.htmlElementCount+1); 
+
+        spanConditionHolder.append(spanLeft);
+        spanConditionHolder.append(this.createLeerzeichen());
+
+
+        const spanOperator = document.createElement("span");
+        spanOperator.classList.add(this.getNextCodeElement(),"selOperators", "synOperators", "sqlWhere", "inputField", "sqlIdentifier", "root");
+        spanOperator.setAttribute("data-sql-element", parentType+"_"+conditionCount++);
+        spanOperator.innerHTML=condition.op;
+
+        spanConditionHolder.append(spanOperator);
+
+
+        if(Array.isArray(condition.right)){
+
+        }
+
+
+        return spanConditionHolder.innerHTML;
+        
+
+    }
 
     createSelect(element, currentCodeline) {
 
