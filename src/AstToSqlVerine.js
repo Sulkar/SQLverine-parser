@@ -1,4 +1,3 @@
-
 export class AstToSqlVerine {
 
     constructor(ast) {
@@ -29,8 +28,8 @@ export class AstToSqlVerine {
 
                 case "WHERE":
                     currentCodeline = this.createCodeline();
-                    this.createWhere(element,currentCodeline);
-                break;
+                    this.createWhere(element, currentCodeline);
+                    break;
 
                 case "CREATE TABLE":
                     currentCodeline = this.createCodeline();
@@ -82,54 +81,103 @@ export class AstToSqlVerine {
         console.log(this.outputContainer.innerHTML);
     };
 
-    createWhere(element, currentCodeline){
+    createWhere(element, currentCodeline) {
         const spanWhere = document.createElement("span");
-        spanWhere.innerHTML="WHERE";
+        spanWhere.innerHTML = "WHERE";
         spanWhere.classList.add(this.getNextCodeElement(), "btnWhere", "synSQL", "sqlWhere", "parent", "sqlIdentifier", "inputFields");
         spanWhere.setAttribute("data-sql-element", "WHERE");
         spanWhere.append(this.createLeerzeichen());
-        if(element.leftBracket==true){
+        if (element.leftBracket == true) {
             spanWhere.append(this.createKlammer("("));
         }
 
-        const condition=this.createCondition(element.conditions[0], "WHERE");
-        spanWhere.innerHTML+=condition;
+        const condition = this.createCondition(element.conditions[0], "WHERE");
+        spanWhere.innerHTML += condition;
 
-        if(element.rightBracket==true){
+        if (element.rightBracket == true) {
             spanWhere.append(this.createKlammer(")"));
         }
-  
+
         currentCodeline.append(spanWhere);
     }
 
-    createCondition(condition, parentType){
+    createCondition(condition, parentType) {
         const spanConditionHolder = document.createElement("span");
-        let conditionCount=1;
-        if(parentType=="JOIN"){
+        let conditionCount = 1;
+        if (parentType == "JOIN") {
             conditionCount++;
         }
-        const spanLeft=this.createColumn(condition.left, 0, parentType+"_"+conditionCount);
-        spanLeft.setAttribute("data-next-element", this.htmlElementCount+1); 
+        const spanLeft = this.createColumn(condition.left, 0, parentType + "_" + conditionCount);
+        spanLeft.setAttribute("data-next-element", this.htmlElementCount + 1);
 
         spanConditionHolder.append(spanLeft);
         spanConditionHolder.append(this.createLeerzeichen());
 
 
         const spanOperator = document.createElement("span");
-        spanOperator.classList.add(this.getNextCodeElement(),"selOperators", "synOperators", "sqlWhere", "inputField", "sqlIdentifier", "root");
-        spanOperator.setAttribute("data-sql-element", parentType+"_"+conditionCount++);
-        spanOperator.innerHTML=condition.op;
+        spanOperator.classList.add(this.getNextCodeElement(), "selOperators", "synOperators", "sqlWhere", "inputField", "sqlIdentifier", "root");
+        conditionCount++;
+        spanOperator.setAttribute("data-sql-element", parentType + "_" + conditionCount);
+        spanOperator.innerHTML = condition.op;
+        spanOperator.setAttribute("data-next-element", this.htmlElementCount + 1);
 
         spanConditionHolder.append(spanOperator);
+        spanConditionHolder.append(this.createLeerzeichen());
+
+        if (condition.right!=undefined) {
+            if (Array.isArray(condition.right)) {
+                // IN
+            }else{
+                //
+
+                if(condition.right.type=="INPUT"){
+                const spanRight = document.createElement("span");
+                conditionCount++;
+                spanRight.setAttribute("data-sql-element", parentType + "_" + conditionCount);
+                spanRight.classList.add(this.getNextCodeElement(), "inputField", "sqlIdentifier", "root", "input", "inputValue", "synValues");
+                spanRight.innerHTML="'"+condition.right.value+"'";
+
+                spanConditionHolder.append(spanRight);
+                }else{
+                    conditionCount++;
+                    const spanRight = this.createColumn(condition.right, 0, parentType + "_" + conditionCount);
+                    spanConditionHolder.append(spanRight);
+                }
+
+            }
+        }else{
+            // BETWEEN
+            const spanRightFrom = document.createElement("span");
+            conditionCount++;
+            spanRightFrom.setAttribute("data-sql-element", "EXP_BETWEEN");
+            spanRightFrom.classList.add(this.getNextCodeElement(), "inputField", "sqlIdentifier", "root", "input", "inputValue", "synValues");
+            spanRightFrom.innerHTML="'"+condition.rightFrom.value+"'";
+
+            spanConditionHolder.append(spanRightFrom);
 
 
-        if(Array.isArray(condition.right)){
+            const spanAnd = document.createElement("span");
+            spanAnd.setAttribute("data-goto-element", this.htmlElementCount -5);
+            spanAnd.classList.add(this.getNextCodeElement());
+            spanAnd.innerHTML=" AND ";
+
+            spanConditionHolder.append(spanAnd);
+
+            const spanRightTo = document.createElement("span");
+            conditionCount++;
+            spanRightTo.setAttribute("data-sql-element", "EXP_BETWEEN");
+            spanRightTo.classList.add(this.getNextCodeElement(), "inputField", "sqlIdentifier", "root", "input", "inputValue", "synValues");
+            spanRightTo.innerHTML="'"+condition.rightTo.value+"'";
+
+            spanConditionHolder.append(spanRightTo);
+           
+
 
         }
 
 
         return spanConditionHolder.innerHTML;
-        
+
 
     }
 
@@ -384,7 +432,7 @@ export class AstToSqlVerine {
     getTableFromColumn(selectField) {
         if (selectField.value != undefined && selectField.value.split('.').length > 1) {
             return selectField.value.split('.')[0];
-        }else if(selectField.ownTable != undefined){
+        } else if (selectField.ownTable != undefined) {
             return selectField.ownTable;
         }
         return this.ast[0].mainTable.value;
@@ -418,7 +466,7 @@ export class AstToSqlVerine {
 
     createInputField(idx) {
         const spanSelSel = document.createElement("span");
-        spanSelSel.classList.add(this.getNextCodeElement(), "sqlIdentifier", "inputField",);
+        spanSelSel.classList.add(this.getNextCodeElement(), "sqlIdentifier", "inputField", );
         if (idx > 0) {
             spanSelSel.classList.add("extended");
         } else {
