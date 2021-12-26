@@ -127,8 +127,47 @@ export class AstToSqlVerine {
         if (condition.right!=undefined) {
             if (Array.isArray(condition.right)) {
                 // IN
+                const spanLeftBracket = document.createElement("span");
+                spanLeftBracket.classList.add(this.getNextCodeElement(), "btnLeftBracket", "synBrackets", "sqlIdentifier", "extended");
+                spanLeftBracket.setAttribute("data-sql-element", "EXP_IN_BRACKET");
+                spanLeftBracket.innerHTML=" (";
+
+                spanConditionHolder.append(spanLeftBracket);
+
+                const inCount = condition.right.length;
+                spanConditionHolder.append(this.createLeerzeichen());
+                condition.right.forEach((inputField, index) => {
+
+                    const spanInVal=document.createElement("span");
+                    spanInVal.classList.add(this.getNextCodeElement(), "inputField",  "sqlIdentifier", "input", "inputValue", "synValue");
+                    if(index==0){
+                        spanInVal.classList.add("root");
+                        spanInVal.setAttribute("data-next-element", this.htmlElementCount-3);
+
+                    }else{
+                        spanInVal.classList.add("extended");
+                    }
+
+                    spanInVal.setAttribute("data-sql-element", "EXP_IN");
+
+                    spanInVal.innerHTML="'"+ inputField.value +"'";
+
+                    if(index<=inCount && index>0){
+                        spanConditionHolder.append(this.createLeerzeichenMitKomma());
+                    }
+
+                    spanConditionHolder.append(spanInVal);
+                });
+
+                const spanRightBracket = document.createElement("span");
+                spanRightBracket.classList.add(this.getNextCodeElement(), "btnRightBracket", "synBrackets", "sqlIdentifier", "extended");
+                spanRightBracket.setAttribute("data-sql-element", "EXP_IN_BRACKET");
+                spanRightBracket.innerHTML=" )";
+
+                spanConditionHolder.append(spanRightBracket);
+
             }else{
-                //
+                // Boolsche Operatoren
 
                 if(condition.right.type=="INPUT"){
                 const spanRight = document.createElement("span");
