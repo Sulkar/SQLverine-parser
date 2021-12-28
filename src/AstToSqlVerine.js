@@ -156,7 +156,7 @@ export class AstToSqlVerine {
                 const spanLeftBracket = document.createElement("span");
                 spanLeftBracket.classList.add(this.getNextCodeElement(), "btnLeftBracket", "synBrackets", "sqlIdentifier", "extended");
                 spanLeftBracket.setAttribute("data-sql-element", "EXP_IN_BRACKET");
-                spanLeftBracket.innerHTML=" (";
+                spanLeftBracket.innerHTML="(";
 
                 spanConditionHolder.append(spanLeftBracket);
 
@@ -165,13 +165,13 @@ export class AstToSqlVerine {
                 condition.right.forEach((inputField, index) => {
 
                     const spanInVal=document.createElement("span");
-                    spanInVal.classList.add(this.getNextCodeElement(), "inputField",  "sqlIdentifier", "input", "inputValue", "synValue");
+                    spanInVal.classList.add(this.getNextCodeElement(), "inputField",  "sqlIdentifier", "input", "inputValue", "synValues");
                     if(index==0){
                         spanInVal.classList.add("root");
                         spanInVal.setAttribute("data-next-element", this.htmlElementCount-3);
 
                     }else{
-                        spanInVal.classList.add("extended");
+                        spanInVal.classList.add("extended", "comma");
                     }
 
                     spanInVal.setAttribute("data-sql-element", "EXP_IN");
@@ -222,7 +222,7 @@ export class AstToSqlVerine {
 
 
             const spanAnd = document.createElement("span");
-            spanAnd.setAttribute("data-goto-element", this.htmlElementCount -5);
+            spanAnd.setAttribute("data-goto-element", this.htmlElementCount -7);
             spanAnd.classList.add(this.getNextCodeElement());
             spanAnd.innerHTML=" AND ";
 
@@ -671,8 +671,8 @@ export class AstToSqlVerine {
     }
     createKlammer(klammerAlsString) {
         const spanKlammer = document.createElement("span");
-        spanKlammer.classList.add(this.getNextCodeElement(), "sqlIdentifier", "synBrackets");
-        spanKlammer.setAttribute("data-goto-element", "parent");
+        spanKlammer.classList.add(this.getNextCodeElement(), "sqlIdentifier", "synBrackets", "extended");
+        //spanKlammer.setAttribute("data-goto-element", "parent");
         spanKlammer.innerHTML = klammerAlsString;
         if (klammerAlsString.includes("(")) {
             spanKlammer.setAttribute("data-sql-element", "LEFTBRACKET");
