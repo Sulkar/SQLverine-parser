@@ -15,9 +15,10 @@ export class AstToSqlVerine {
 
     parseAst() {
         /* */
+        let currentCodeline;
         this.ast.forEach((element, index) => {
 
-            let currentCodeline;
+            
             let lastElement = false;
             switch (element.type) {
 
@@ -29,6 +30,11 @@ export class AstToSqlVerine {
                 case "WHERE":
                     currentCodeline = this.createCodeline();
                     this.createWhere(element, currentCodeline);
+                    break;
+
+                case "OR":
+                case "AND":
+                    this.createAndOr(element, currentCodeline);
                     break;
 
                 case "CREATE TABLE":
@@ -92,6 +98,26 @@ export class AstToSqlVerine {
         }
 
         const condition = this.createCondition(element.conditions[0], "WHERE");
+        spanWhere.innerHTML += condition;
+
+        if (element.rightBracket == true) {
+            spanWhere.append(this.createKlammer(")"));
+        }
+
+        currentCodeline.append(spanWhere);
+    }
+
+    createAndOr(element, currentCodeline){
+        const spanWhere = document.createElement("span");
+        spanWhere.innerHTML =" "+ element.type;
+        spanWhere.classList.add(this.getNextCodeElement(), "btn"+element.type, "synSQL", "sqlWhere", "parent", "sqlIdentifier", "inputFields");
+        spanWhere.setAttribute("data-sql-element", "WHERE");
+        spanWhere.append(this.createLeerzeichen());
+        if (element.leftBracket == true) {
+            spanWhere.append(this.createKlammer("("));
+        }
+
+        const condition = this.createCondition(element.conditions[0], element.type);
         spanWhere.innerHTML += condition;
 
         if (element.rightBracket == true) {
