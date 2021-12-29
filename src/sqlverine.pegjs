@@ -437,14 +437,17 @@ JoinStmt =
     _ x3:SelectField
     {
     if(x11 != null) x1 = [x1].concat(x11[1]); // [0] = undefined, [1] = Identifier
-    return {
-   
+    let conditions = {
+    left: x2,
+    op: x21,
+    right: x3
+    
+    }
+    return {   
     type: "JOIN",
     table: x1, 
-    selectField1: x2,
-    operator: x21,
-    selectField2: x3
-      };
+    conditions: [conditions]
+          };
   }
 
 /* Select Fields */
