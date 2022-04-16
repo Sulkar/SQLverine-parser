@@ -32,6 +32,11 @@ export class AstToSqlVerine {
                     this.createWhere(element, currentCodeline);
                     break;
 
+                case "JOIN":
+                    currentCodeline = this.createCodeline();
+                    this.createJoin(element, currentCodeline);
+                    break;
+
                 case "OR":
                 case "AND":
                     this.createAndOr(element, currentCodeline);
@@ -86,6 +91,45 @@ export class AstToSqlVerine {
 
         console.log(this.outputContainer.innerHTML);
     };
+
+    createJoin(element, currentCodeline) {
+        const spanJoin = document.createElement("span");
+        spanJoin.innerHTML="JOIN";
+        spanJoin.classList.add(this.getNextCodeElement(), "btnJoin", "synSQL", "sqlJoin", "parent", "sqlIdentifier", "inputFields");
+        spanJoin.setAttribute("data-sql-element", "JOIN");
+        spanJoin.append(this.createLeerzeichen());
+
+        const spanTable = this.createTable(element.table, 0, "JOIN_1");
+        spanJoin.append(spanTable);
+        spanJoin.append(this.createLeerzeichen());
+
+        const spanOn = document.createElement("span");
+        spanOn.innerHTML="ON";
+        spanOn.classList.add(this.getNextCodeElement());
+        spanOn.setAttribute("data-goto-element", this.htmlElementCount -5);
+        spanJoin.append(spanOn);
+        spanJoin.append(this.createLeerzeichen());
+
+        const spanCol1=this.createColumn(element.selectField1,0,"JOIN_2");
+        spanCol1.setAttribute("data-next-element", this.htmlElementCount +1);
+        spanJoin.append(spanCol1);
+        spanJoin.append(this.createLeerzeichen());
+
+        const spanOperator = document.createElement("span");
+        spanOperator.classList.add(this.getNextCodeElement(), "selOperators", "synOperators", "inputField", "sqlIdentifier", "root");
+        spanOperator.setAttribute("data-sql-element", "JOIN_3");
+        spanOperator.innerHTML = element.operator;
+        spanOperator.setAttribute("data-next-element", this.htmlElementCount -5);
+        spanJoin.append(spanOperator);
+        spanJoin.append(this.createLeerzeichen());
+        
+        const spanCol2=this.createColumn(element.selectField2,0,"JOIN_4");
+        spanCol2.setAttribute("data-next-element", this.htmlElementCount -5);
+        spanJoin.append(spanCol2);
+  
+
+        currentCodeline.append(spanJoin);
+    }
 
     createWhere(element, currentCodeline) {
         const spanWhere = document.createElement("span");
