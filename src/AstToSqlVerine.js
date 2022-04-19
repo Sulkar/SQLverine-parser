@@ -40,6 +40,14 @@ export class AstToSqlVerine {
                     this.createGroupBy(element, currentCodeline);
                 break;
 
+                case "LIMIT":
+                    this.createLimit(element, currentCodeline);
+                break;
+
+                case "OFFSET":
+                    this.createOffset(element, currentCodeline);
+                break;
+
                 case "JOIN":
                     currentCodeline = this.createCodeline();
                     this.createJoin(element, currentCodeline);
@@ -233,6 +241,42 @@ export class AstToSqlVerine {
 
         });
         currentCodeline.append(spanGroupBy);
+    }
+
+    createLimit(element, currentCodeline){
+        const spanLimit = document.createElement("span");
+        spanLimit.classList.add(this.getNextCodeElement(), "btnLimit", "synSQL", "sqlOrder", "parent", "sqlIdentifier", "inputFields");
+        spanLimit.setAttribute("data-sql-element", "LIMIT");
+
+        spanLimit.append(this.createLeerzeichen());
+        spanLimit.append("LIMIT");
+        spanLimit.append(this.createLeerzeichen());
+
+        const spanVal = this.createInputField(0);
+        spanVal.append(element.selectField.value);
+        spanVal.classList.add("synValues");
+        spanVal.setAttribute("data-sql-element", "LIMIT_1");
+        spanLimit.append(spanVal);
+
+        currentCodeline.append(spanLimit);
+    }
+
+    createOffset(element, currentCodeline){
+        const spanOffset = document.createElement("span");
+        spanOffset.classList.add(this.getNextCodeElement(), "btnOffset", "synSQL", "sqlOrder", "parent", "sqlIdentifier", "inputFields");
+        spanOffset.setAttribute("data-sql-element", "OFFSET");
+
+        spanOffset.append(this.createLeerzeichen());
+        spanOffset.append("OFFSET");
+        spanOffset.append(this.createLeerzeichen());
+
+        const spanVal = this.createInputField(0);
+        spanVal.append(element.selectField.value);
+        spanVal.classList.add("synValues");
+        spanVal.setAttribute("data-sql-element", "OFFSET_1");
+        spanOffset.append(spanVal);
+
+        currentCodeline.append(spanOffset);
     }
 
     createCondition(condition, parentType) {
