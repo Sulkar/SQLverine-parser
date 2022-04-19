@@ -32,6 +32,9 @@ export class AstToSqlVerine {
                     this.createWhere(element, currentCodeline);
                     break;
 
+                case "ORDER BY":
+                    this.createOrderBy(element, currentCodeline);
+                break;
                 case "JOIN":
                     currentCodeline = this.createCodeline();
                     this.createJoin(element, currentCodeline);
@@ -169,6 +172,43 @@ export class AstToSqlVerine {
         }
 
         currentCodeline.append(spanWhere);
+    }
+
+
+    createOrderBy(element, currentCodeline){
+        const spanOrderBy = document.createElement("span");
+        spanOrderBy.classList.add(this.getNextCodeElement(), "btnOrder", "synSQL", "sqlOrder", "parent", "sqlIdentifier", "inputFields");
+        spanOrderBy.setAttribute("data-sql-element", "ORDER");
+
+        spanOrderBy.append(this.createLeerzeichen());
+        spanOrderBy.append("ORDER BY");
+        spanOrderBy.append(this.createLeerzeichen());
+
+        element.selectFields.forEach((field,index) => {
+            
+            if (field.selectField.type == "AGGREGATE") {
+                const spanAgg = this.createAggregate(field.selectField,0);
+                spanOrderBy.append(spanAgg);
+            }else {
+                const spanCol = this.createColumn(field.selectField,0,"ORDER_1");
+                spanOrderBy.append(spanCol);
+            }
+
+            const spanDirection = document.createElement("span");
+            spanDirection.classList.add(this.getNextCodeElement(),  "synSQL", "sqlSelect", "parent", "sqlIdentifier", "inputField", "extended");
+            spanDirection.setAttribute("data-sql-element", field.type);
+            spanDirection.append(this.createLeerzeichen());
+            spanDirection.innerHTML += field.type;
+           
+
+            spanOrderBy.append(spanDirection);
+            if(index+1!=element.selectFields.length){
+                spanOrderBy.append(this.createLeerzeichenMitKomma());
+            }
+        });
+
+        currentCodeline.append(spanOrderBy);
+
     }
 
     createCondition(condition, parentType) {
