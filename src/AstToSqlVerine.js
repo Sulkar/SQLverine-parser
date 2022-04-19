@@ -35,6 +35,11 @@ export class AstToSqlVerine {
                 case "ORDER BY":
                     this.createOrderBy(element, currentCodeline);
                 break;
+
+                case "GROUP BY":
+                    this.createGroupBy(element, currentCodeline);
+                break;
+
                 case "JOIN":
                     currentCodeline = this.createCodeline();
                     this.createJoin(element, currentCodeline);
@@ -209,6 +214,25 @@ export class AstToSqlVerine {
 
         currentCodeline.append(spanOrderBy);
 
+    }
+    createGroupBy(element, currentCodeline){
+        const spanGroupBy = document.createElement("span");
+        spanGroupBy.classList.add(this.getNextCodeElement(), "btnGroup", "synSQL", "sqlGroup", "parent", "sqlIdentifier", "inputFields");
+        spanGroupBy.setAttribute("data-sql-element", "GROUP");
+
+        spanGroupBy.append(this.createLeerzeichen());
+        spanGroupBy.append("GROUP BY");
+        spanGroupBy.append(this.createLeerzeichen());
+        
+        element.selectFields.forEach((field,index) => {
+            const spanCol = this.createColumn(field,0,"GROUP_1");
+            spanGroupBy.append(spanCol);
+            if(index+1!=element.selectFields.length){
+                spanGroupBy.append(this.createLeerzeichenMitKomma());
+            }
+
+        });
+        currentCodeline.append(spanGroupBy);
     }
 
     createCondition(condition, parentType) {
