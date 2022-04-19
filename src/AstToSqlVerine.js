@@ -105,7 +105,7 @@ export class AstToSqlVerine {
             };
         });
 
-        console.log(this.outputContainer.innerHTML);
+        //console.log(this.outputContainer.innerHTML);
     };
 
     createJoin(element, currentCodeline) {
@@ -413,7 +413,6 @@ export class AstToSqlVerine {
         element.selectFields.forEach((selectField, idx) => {
 
             const leerZeichenSpan = this.createLeerzeichen();
-            console.log(idx)
             if (idx > 0) {
                 leerZeichenSpan.innerHTML = ", ";
             }
