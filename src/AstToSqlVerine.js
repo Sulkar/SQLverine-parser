@@ -51,7 +51,7 @@ export class AstToSqlVerine {
                 case "JOIN":
                     currentCodeline = this.createCodeline();
                     this.createJoin(element, currentCodeline);
-                    break;
+                break;
 
                 case "OR":
                 case "AND":
@@ -109,6 +109,7 @@ export class AstToSqlVerine {
     };
 
     createJoin(element, currentCodeline) {
+
         const spanJoin = document.createElement("span");
         spanJoin.innerHTML="JOIN";
         spanJoin.classList.add(this.getNextCodeElement(), "btnJoin", "synSQL", "sqlJoin", "parent", "sqlIdentifier", "inputFields");
@@ -125,7 +126,11 @@ export class AstToSqlVerine {
         spanOn.setAttribute("data-goto-element", this.htmlElementCount -5);
         spanJoin.append(spanOn);
         spanJoin.append(this.createLeerzeichen());
+       
+        const condition = this.createCondition(element.conditions[0], element.type);
+        spanJoin.innerHTML += condition;
 
+        /*
         const spanCol1=this.createColumn(element.selectField1,0,"JOIN_2");
         spanCol1.setAttribute("data-next-element", this.htmlElementCount +1);
         spanJoin.append(spanCol1);
@@ -138,11 +143,11 @@ export class AstToSqlVerine {
         spanOperator.setAttribute("data-next-element", this.htmlElementCount -5);
         spanJoin.append(spanOperator);
         spanJoin.append(this.createLeerzeichen());
-        
+
         const spanCol2=this.createColumn(element.selectField2,0,"JOIN_4");
         spanCol2.setAttribute("data-next-element", this.htmlElementCount -5);
         spanJoin.append(spanCol2);
-  
+        */
 
         currentCodeline.append(spanJoin);
     }
