@@ -523,7 +523,7 @@ ColumnNumber = x:[a-z0-9_%*]i xs:[a-z0-9_.%*]i* {
 }
 
 Input "Input" 
-	= [''] x:[a-z0-9_%*äÄüÜöÖß ]i* [''] {
+	= [''] x:[\-a-z0-9_%*äÄüÜöÖß ]i* [''] {
     return {
     type:"INPUT",
     value:text(x).replaceAll("'","")
