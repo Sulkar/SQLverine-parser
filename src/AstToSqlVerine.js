@@ -284,6 +284,13 @@ export class AstToSqlVerine {
         currentCodeline.append(spanOffset);
     }
 
+    getInputNumberText(input){
+        if(isNaN(input)){
+            return "'"+input+"'";
+        }else{
+            return ""+input+"";
+        }
+    }
     createCondition(condition, parentType) {
         const spanConditionHolder = document.createElement("span");
         let conditionCount = 1;
@@ -305,7 +312,8 @@ export class AstToSqlVerine {
                 spanLeft = document.createElement("span");
                 spanLeft.setAttribute("data-sql-element", parentType + "_" + conditionCount);
                 spanLeft.classList.add(this.getNextCodeElement(), "inputField", "sqlIdentifier", "root", "input", "inputValue", "synValues");
-                spanLeft.innerHTML="'"+condition.left.value+"'";
+                spanLeft.innerHTML=this.getInputNumberText(condition.left.value);
+                
                 break;    
             default:
                 spanLeft = this.createColumn(condition.left, 0, parentType + "_" + conditionCount);
@@ -354,7 +362,7 @@ export class AstToSqlVerine {
 
                     spanInVal.setAttribute("data-sql-element", "EXP_IN");
 
-                    spanInVal.innerHTML="'"+ inputField.value +"'";
+                    spanInVal.innerHTML=this.getInputNumberText(inputField.value);
 
                     if(index<=inCount && index>0){
                         spanConditionHolder.append(this.createLeerzeichenMitKomma());
@@ -390,7 +398,8 @@ export class AstToSqlVerine {
                         conditionCount++;
                         spanRight.setAttribute("data-sql-element", parentType + "_" + conditionCount);
                         spanRight.classList.add(this.getNextCodeElement(), "inputField", "sqlIdentifier", "root", "input", "inputValue", "synValues");
-                        spanRight.innerHTML="'"+condition.right.value+"'";
+                        spanRight.innerHTML=this.getInputNumberText(condition.right.value);
+                                        
                         break;    
                     default:
                         conditionCount++;
@@ -409,7 +418,7 @@ export class AstToSqlVerine {
             conditionCount++;
             spanRightFrom.setAttribute("data-sql-element", "EXP_BETWEEN");
             spanRightFrom.classList.add(this.getNextCodeElement(), "inputField", "sqlIdentifier", "root", "input", "inputValue", "synValues");
-            spanRightFrom.innerHTML="'"+condition.rightFrom.value+"'";
+            spanRightFrom.innerHTML=this.getInputNumberText(condition.rightFrom.value);
 
             spanConditionHolder.append(spanRightFrom);
 
@@ -425,7 +434,7 @@ export class AstToSqlVerine {
             conditionCount++;
             spanRightTo.setAttribute("data-sql-element", "EXP_BETWEEN");
             spanRightTo.classList.add(this.getNextCodeElement(), "inputField", "sqlIdentifier", "root", "input", "inputValue", "synValues");
-            spanRightTo.innerHTML="'"+condition.rightTo.value+"'";
+            spanRightTo.innerHTML=this.getInputNumberText(condition.rightTo.value);
 
             spanConditionHolder.append(spanRightTo);
            
@@ -714,7 +723,7 @@ export class AstToSqlVerine {
     createValue(selectField, idx, sqlDataElement) {
         const spanValue = this.createInputField(idx);
         spanValue.setAttribute("data-sql-element", sqlDataElement);
-        spanValue.innerHTML = "'" + selectField.value + "'";
+        spanValue.innerHTML = this.getInputNumberText(selectField.value);
         spanValue.classList.add("synValues", "inputValue");
         return spanValue;
 

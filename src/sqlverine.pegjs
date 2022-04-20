@@ -507,17 +507,21 @@ Operator
   / "="        { return "="; }
   / "LIKE"i  { return "LIKE"; }
 
-Identifier = Column / Input
+Identifier =  Input / ColumnNumber
 IdentifierRest = _ "," _ s:Identifier {
 	return s;
 }
 
-Column = x:[a-z0-9_%*]i xs:[a-z0-9_.%*]i* {
+ColumnNumber = x:[a-z0-9_%*]i xs:[a-z0-9_.%*]i* {
+    let tempType = ""    
+    if(isNaN(text(x.concat(xs)))) tempType = "COLUMN"
+    else tempType = "INPUT"
     return {
-    type:"COLUMN",
+    type:tempType,
     value:text(x.concat(xs))
     }
 }
+
 Input "Input" 
 	= [''] x:[a-z0-9_%*äÄüÜöÖß ]i* [''] {
     return {
