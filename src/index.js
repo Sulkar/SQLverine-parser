@@ -15,7 +15,7 @@ import {
 
 import {
   parse
-} from "./sqlverine.pegjs";
+} from "./sqlverine.pegjs"; 
 
 
 //global variables
