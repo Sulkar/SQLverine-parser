@@ -290,8 +290,29 @@ export class AstToSqlVerine {
         if (parentType == "JOIN") {
             conditionCount++;
         }
-        const spanLeft = this.createColumn(condition.left, 0, parentType + "_" + conditionCount);
-        spanLeft.setAttribute("data-next-element", this.htmlElementCount + 1);
+
+        let spanLeft;
+        switch (condition.left.type) {
+            case "STRING_FUNCTION":
+                spanLeft = this.createStringFunction(condition.left, 0,  parentType + "_" + conditionCount);
+                //spanLeft.append(stringFunctionSpan);
+                break;
+        
+            case "AGGREGATE":
+                //TODO
+                break;
+            case "INPUT":
+                spanLeft = document.createElement("span");
+                spanLeft.setAttribute("data-sql-element", parentType + "_" + conditionCount);
+                spanLeft.classList.add(this.getNextCodeElement(), "inputField", "sqlIdentifier", "root", "input", "inputValue", "synValues");
+                spanLeft.innerHTML="'"+condition.left.value+"'";
+                break;    
+            default:
+                spanLeft = this.createColumn(condition.left, 0, parentType + "_" + conditionCount);
+                spanLeft.setAttribute("data-next-element", this.htmlElementCount + 1);
+                break;
+        }
+        
 
         spanConditionHolder.append(spanLeft);
         spanConditionHolder.append(this.createLeerzeichen());
@@ -352,19 +373,34 @@ export class AstToSqlVerine {
             }else{
                 // Boolsche Operatoren
 
-                if(condition.right.type=="INPUT"){
-                const spanRight = document.createElement("span");
-                conditionCount++;
-                spanRight.setAttribute("data-sql-element", parentType + "_" + conditionCount);
-                spanRight.classList.add(this.getNextCodeElement(), "inputField", "sqlIdentifier", "root", "input", "inputValue", "synValues");
-                spanRight.innerHTML="'"+condition.right.value+"'";
 
-                spanConditionHolder.append(spanRight);
-                }else{
-                    conditionCount++;
-                    const spanRight = this.createColumn(condition.right, 0, parentType + "_" + conditionCount);
-                    spanConditionHolder.append(spanRight);
+                let spanRight;
+                switch (condition.right.type) {
+                    case "STRING_FUNCTION":
+                        conditionCount++;
+                        spanRight = this.createStringFunction(condition.right, 0,  parentType + "_" + conditionCount);
+                        //spanLeft.append(stringFunctionSpan);
+                        break;
+                
+                    case "AGGREGATE":
+                        //TODO
+                        break;
+                    case "INPUT":
+                        spanRight = document.createElement("span");
+                        conditionCount++;
+                        spanRight.setAttribute("data-sql-element", parentType + "_" + conditionCount);
+                        spanRight.classList.add(this.getNextCodeElement(), "inputField", "sqlIdentifier", "root", "input", "inputValue", "synValues");
+                        spanRight.innerHTML="'"+condition.right.value+"'";
+                        break;    
+                    default:
+                        conditionCount++;
+                        spanRight = this.createColumn(condition.right, 0, parentType + "_" + conditionCount);
+                    
+                        break;
                 }
+                spanConditionHolder.append(spanRight);
+                
+               
 
             }
         }else{
@@ -434,7 +470,7 @@ export class AstToSqlVerine {
                     spanSelect.append(aggregateSpan);
                     break;
                 case "STRING_FUNCTION":
-                    const stringFunctionSpan = this.createStringFunction(selectField, idx);
+                    const stringFunctionSpan = this.createStringFunction(selectField, idx, "SELECT_SELECT");
                     spanSelect.append(stringFunctionSpan);
                     break;
 
@@ -714,9 +750,9 @@ export class AstToSqlVerine {
         return spanAgg;
     }
 
-    createStringFunction(selectField, idx) {
+    createStringFunction(selectField, idx, sqlDataElement) {
         const spanStringFunc = this.createInputField(idx);
-        spanStringFunc.setAttribute("data-sql-element", "SELECT_SELECT");
+        spanStringFunc.setAttribute("data-sql-element", sqlDataElement);
         spanStringFunc.innerHTML = selectField.string_function + "(";
         spanStringFunc.classList.add("selStringFunction", "synSQL", "sqlSelect");
 
@@ -727,13 +763,13 @@ export class AstToSqlVerine {
             selectField.selectFields.forEach((selField, index) => {
                 const innerSpan = document.createElement("span");
                 if (index < 1) {
-                    innerSpan.setAttribute("data-sql-element", "SELECT_SELECT_" + stringFunction + "_FUNCTION_1");
+                    innerSpan.setAttribute("data-sql-element",sqlDataElement+"_" + stringFunction + "_FUNCTION_1");
                     innerSpan.innerHTML = selField.value;
                     innerSpan.classList.add(this.getNextCodeElement(), this.getTableFromColumn(selField),
                         "selColumn", "synColumns", "sqlIdentifier", "inputField", "root");
                     spanStringFunc.append(innerSpan);
                 } else {
-                    innerSpan.setAttribute("data-sql-element", "SELECT_SELECT_" + stringFunction + "_FUNCTION_2");
+                    innerSpan.setAttribute("data-sql-element", sqlDataElement+"_" + stringFunction + "_FUNCTION_2");
 
                     innerSpan.classList.add(this.getNextCodeElement(),
                         "synValue", "sqlIdentifier", "inputValue", "inputField", "root");
@@ -783,7 +819,7 @@ export class AstToSqlVerine {
                         });
                         spanColumn = this.createColumn(selField, idx, "SELECT_SELECT");
                         */
-            spanColumn = this.createStringFunction(selectField.selectField1, idx);
+            spanColumn = this.createStringFunction(selectField.selectField1, idx, "SELECT_SELECT");
         }
 
         const innerSpan = document.createElement("span");
