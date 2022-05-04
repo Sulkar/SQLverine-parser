@@ -76,7 +76,7 @@ StartCreate = create:CreateStmt createColumn:(CreateColumnStmt*)? craeateForeign
     }
     
 StartSelect
- = select:SelectStmt join:(JoinStmt*)? where:(WhereStmt*)? andOr:(AndOrStmt*)? groupBy:(GroupByStmt*)? having:(HavingStmt*)? orderBy:(OrderByStmt*)? limit:(LimitStmt*)? offset:(OffsetStmt*)?
+ = select:SelectStmt join:(JoinStmt*)? where:(WhereStmt*)? andOr:(AndOrStmt*)? groupBy:(GroupByStmt*)? having:(HavingStmt*)? andOr2:(AndOrStmt*)? orderBy:(OrderByStmt*)? limit:(LimitStmt*)? offset:(OffsetStmt*)?
  	
   { 
     let resultArray = [];
@@ -92,14 +92,17 @@ StartSelect
     andOr.forEach((andOr) =>{
       resultArray = resultArray.concat(andOr);
     });
-    having.forEach((having) =>{
-      resultArray = resultArray.concat(having);
-    });
     orderBy.forEach((orderBy) =>{
       resultArray = resultArray.concat(orderBy);
     });
     groupBy.forEach((groupBy) =>{
       resultArray = resultArray.concat(groupBy);
+    });
+    having.forEach((having) =>{
+      resultArray = resultArray.concat(having);
+    });   
+    andOr2.forEach((andOr2) =>{
+      resultArray = resultArray.concat(andOr2);
     });
     limit.forEach((limit) =>{
       resultArray = resultArray.concat(limit);

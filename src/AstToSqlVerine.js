@@ -964,7 +964,7 @@ export class AstToSqlVerine {
   }
 
   createAggregate(selectField, idx, sqlDataElement) {
-    const spanAgg = this.createinputField(idx);
+    const spanAgg = this.createInputField(idx);
     spanAgg.setAttribute("data-sql-element", sqlDataElement);
     spanAgg.innerHTML = selectField.aggregate + "(";
     spanAgg.classList.add("selAggregate", "synSQL", "sqlSelect");
