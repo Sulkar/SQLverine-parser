@@ -76,8 +76,7 @@ StartCreate = create:CreateStmt createColumn:(CreateColumnStmt*)? craeateForeign
     }
     
 StartSelect
- = select:SelectStmt join:(JoinStmt*)? where:(WhereStmt*)? andOr:(AndOrStmt*)? groupBy:(GroupByStmt*)? 
- 	orderBy:(OrderByStmt*)? limit:(LimitStmt*)? offset:(OffsetStmt*)?
+ = select:SelectStmt join:(JoinStmt*)? where:(WhereStmt*)? andOr:(AndOrStmt*)? groupBy:(GroupByStmt*)? having:(HavingStmt*)? orderBy:(OrderByStmt*)? limit:(LimitStmt*)? offset:(OffsetStmt*)?
  	
   { 
     let resultArray = [];
@@ -92,6 +91,9 @@ StartSelect
     });
     andOr.forEach((andOr) =>{
       resultArray = resultArray.concat(andOr);
+    });
+    having.forEach((having) =>{
+      resultArray = resultArray.concat(having);
     });
     orderBy.forEach((orderBy) =>{
       resultArray = resultArray.concat(orderBy);
@@ -302,6 +304,22 @@ SelectStmt
     };
   }
   
+  HavingStmt = 
+  	_ "HAVING"i
+    _ x1:"("?
+    _ x2:(LogicExprIn / LogicExprBetween / LogicExpr)
+    _ x3:")"?
+    {
+    x1 = checkBrackets(x1);
+    x3 = checkBrackets(x3);
+    return {
+    type: "HAVING",
+      leftBracket: x1,
+      rightBracket: x3,
+      conditions: [x2]
+    };
+  }
+
    OrStmt = 
   	_ "OR"i
     _ x1:"("?

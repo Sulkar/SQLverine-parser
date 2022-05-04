@@ -27,7 +27,10 @@ export class AstToSqlVerine {
           currentCodeline = this.createCodeline();
           this.createWhere(element, currentCodeline);
           break;
-
+        case "HAVING":
+          currentCodeline = this.createCodeline();
+          this.createHaving(element, currentCodeline);
+          break;
         case "ORDER BY":
           this.createOrderBy(element, currentCodeline);
           break;
@@ -140,7 +143,7 @@ export class AstToSqlVerine {
         spanJoin.append(this.createLeerzeichen());
 
         const spanOperator = document.createElement("span");
-        spanOperator.classList.add(this.getNextCodeElement(), "selOperators", "synOperators", "inputField", "sqlIdentifier", "root");
+        spanOperator.classList.add(this.getNextCodeElement(), "selOperators", "synOperators", "inputFields", "sqlIdentifier", "root");
         spanOperator.setAttribute("data-sql-element", "JOIN_3");
         spanOperator.innerHTML = element.operator;
         spanOperator.setAttribute("data-next-element", this.htmlElementCount -5);
@@ -174,6 +177,33 @@ export class AstToSqlVerine {
     }
 
     const condition = this.createCondition(element.conditions[0], "WHERE");
+    spanWhere.innerHTML += condition;
+
+    if (element.rightBracket == true) {
+      spanWhere.append(this.createKlammer(")"));
+    }
+
+    currentCodeline.append(spanWhere);
+  }
+  createHaving(element, currentCodeline) {
+    const spanWhere = document.createElement("span");
+    spanWhere.innerHTML = "HAVING";
+    spanWhere.classList.add(
+      this.getNextCodeElement(),
+      "btnHaving",
+      "synSQL",
+      "sqlHaving",
+      "parent",
+      "sqlIdentifier",
+      "inputFields"
+    );
+    spanWhere.setAttribute("data-sql-element", "HAVING");
+    spanWhere.append(this.createLeerzeichen());
+    if (element.leftBracket == true) {
+      spanWhere.append(this.createKlammer("("));
+    }
+
+    const condition = this.createCondition(element.conditions[0], "HAVING");
     spanWhere.innerHTML += condition;
 
     if (element.rightBracket == true) {
@@ -230,7 +260,11 @@ export class AstToSqlVerine {
 
     element.selectFields.forEach((field, index) => {
       if (field.selectField.type == "AGGREGATE") {
-        const spanAgg = this.createAggregate(field.selectField, 0);
+        const spanAgg = this.createAggregate(
+          field.selectField,
+          0,
+          "SELECT_SELECT"
+        );
         spanOrderBy.append(spanAgg);
       } else {
         const spanCol = this.createColumn(field.selectField, 0, "ORDER_1");
@@ -240,12 +274,11 @@ export class AstToSqlVerine {
       const spanDirection = document.createElement("span");
       spanDirection.classList.add(
         this.getNextCodeElement(),
+        "btnAsc",
         "synSQL",
-        "sqlSelect",
-        "parent",
+        "sqlOrder",
         "sqlIdentifier",
-        "inputField",
-        "extended"
+        "inputFields"
       );
       spanDirection.setAttribute("data-sql-element", field.type);
       spanDirection.append(this.createLeerzeichen());
@@ -364,7 +397,12 @@ export class AstToSqlVerine {
         break;
 
       case "AGGREGATE":
-        //TODO
+        conditionCount++;
+        spanLeft = this.createAggregate(
+          condition.left,
+          0,
+          parentType + "_" + conditionCount
+        );
         break;
       case "INPUT":
         spanLeft = document.createElement("span");
@@ -374,7 +412,7 @@ export class AstToSqlVerine {
         );
         spanLeft.classList.add(
           this.getNextCodeElement(),
-          "inputField",
+          "inputFields",
           "sqlIdentifier",
           "root",
           "input",
@@ -403,7 +441,7 @@ export class AstToSqlVerine {
       "selOperators",
       "synOperators",
       "sqlWhere",
-      "inputField",
+      "inputFields",
       "sqlIdentifier",
       "root"
     );
@@ -440,7 +478,7 @@ export class AstToSqlVerine {
           const spanInVal = document.createElement("span");
           spanInVal.classList.add(
             this.getNextCodeElement(),
-            "inputField",
+            "inputFields",
             "sqlIdentifier",
             "input",
             "inputValue",
@@ -495,7 +533,12 @@ export class AstToSqlVerine {
             break;
 
           case "AGGREGATE":
-            //TODO
+            conditionCount++;
+            spanRight = this.createAggregate(
+              condition.right,
+              0,
+              parentType + "_" + conditionCount
+            );
             break;
           case "INPUT":
             spanRight = document.createElement("span");
@@ -506,7 +549,7 @@ export class AstToSqlVerine {
             );
             spanRight.classList.add(
               this.getNextCodeElement(),
-              "inputField",
+              "inputFields",
               "sqlIdentifier",
               "root",
               "input",
@@ -537,7 +580,7 @@ export class AstToSqlVerine {
       spanRightFrom.setAttribute("data-sql-element", "EXP_BETWEEN");
       spanRightFrom.classList.add(
         this.getNextCodeElement(),
-        "inputField",
+        "inputFields",
         "sqlIdentifier",
         "root",
         "input",
@@ -562,7 +605,7 @@ export class AstToSqlVerine {
       spanRightTo.setAttribute("data-sql-element", "EXP_BETWEEN");
       spanRightTo.classList.add(
         this.getNextCodeElement(),
-        "inputField",
+        "inputFields",
         "sqlIdentifier",
         "root",
         "input",
@@ -607,7 +650,11 @@ export class AstToSqlVerine {
           spanSelect.append(asSpan);
           break;
         case "AGGREGATE":
-          const aggregateSpan = this.createAggregate(selectField, idx);
+          const aggregateSpan = this.createAggregate(
+            selectField,
+            idx,
+            "SELECT_SELECT"
+          );
           spanSelect.append(aggregateSpan);
           break;
         case "STRING_FUNCTION":
@@ -906,7 +953,7 @@ export class AstToSqlVerine {
     spanSelSel.classList.add(
       this.getNextCodeElement(),
       "sqlIdentifier",
-      "inputField"
+      "inputFields"
     );
     if (idx > 0) {
       spanSelSel.classList.add("extended");
@@ -916,9 +963,9 @@ export class AstToSqlVerine {
     return spanSelSel;
   }
 
-  createAggregate(selectField, idx) {
-    const spanAgg = this.createInputField(idx);
-    spanAgg.setAttribute("data-sql-element", "SELECT_SELECT");
+  createAggregate(selectField, idx, sqlDataElement) {
+    const spanAgg = this.createinputField(idx);
+    spanAgg.setAttribute("data-sql-element", sqlDataElement);
     spanAgg.innerHTML = selectField.aggregate + "(";
     spanAgg.classList.add("selAggregate", "synSQL", "sqlSelect");
 
@@ -929,10 +976,10 @@ export class AstToSqlVerine {
       "selColumn",
       "synColumns",
       "sqlIdentifier",
-      "inputField",
+      "inputFields",
       "root"
     );
-    innerSpan.setAttribute("data-sql-element", "SELECT_SELECT_AGGREGAT");
+    innerSpan.setAttribute("data-sql-element", sqlDataElement + "_AGGREGAT");
     innerSpan.innerHTML = selectField.selectField.value;
 
     spanAgg.append(innerSpan);
@@ -964,7 +1011,7 @@ export class AstToSqlVerine {
             "selColumn",
             "synColumns",
             "sqlIdentifier",
-            "inputField",
+            "inputFields",
             "root"
           );
           spanStringFunc.append(innerSpan);
@@ -979,7 +1026,7 @@ export class AstToSqlVerine {
             "synValue",
             "sqlIdentifier",
             "inputValue",
-            "inputField",
+            "inputFields",
             "root"
           );
 
@@ -1007,7 +1054,7 @@ export class AstToSqlVerine {
         "selColumn",
         "synColumns",
         "sqlIdentifier",
-        "inputField",
+        "inputFields",
         "root"
       );
       spanStringFunc.append(innerSpan);
@@ -1027,7 +1074,11 @@ export class AstToSqlVerine {
       );
     }
     if (selectField.selectField1.type == "AGGREGATE") {
-      spanColumn = this.createAggregate(selectField.selectField1, idx);
+      spanColumn = this.createAggregate(
+        selectField.selectField1,
+        idx,
+        "SELECT_SELECT"
+      );
     }
     if (selectField.selectField1.type == "STRING_FUNCTION") {
       /*
