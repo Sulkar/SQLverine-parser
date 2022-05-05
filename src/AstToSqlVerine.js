@@ -98,13 +98,63 @@ export class AstToSqlVerine {
             lastCreateBracket.append(klammerRechts);
           }
           break;
+        case "DROP TABLE":
+          currentCodeline = this.createCodeline();
+          this.createDropTable(element, currentCodeline);
+          break;
 
+        case "DELETE FROM":
+          currentCodeline = this.createCodeline();
+          this.createDeleteFrom(element, currentCodeline);
+          break;
         default:
           console.log("Element of type " + element.type + " canot be parsed.");
       }
     });
 
     //console.log(this.outputContainer.innerHTML);
+  }
+
+  createDeleteFrom(element, currentCodeline) {
+    const spanDeleteFrom = document.createElement("span");
+    spanDeleteFrom.classList.add(
+      this.getNextCodeElement(),
+      "synSQL",
+      "parent",
+      "sqlIdentifier",
+      "inputField",
+      "btnSQLDelete"
+    );
+    spanDeleteFrom.setAttribute("data-sql-element", "DELETE_FROM");
+    spanDeleteFrom.append("DELETE FROM");
+    spanDeleteFrom.append(this.createLeerzeichen());
+
+    const spanTable = this.createTable(element.mainTable, 0, "DELETE_FROM_1");
+    spanDeleteFrom.append(spanTable);
+    spanDeleteFrom.append(this.createLeerzeichen());
+
+    currentCodeline.append(spanDeleteFrom);
+  }
+
+  createDropTable(element, currentCodeline) {
+    const spanDropTable = document.createElement("span");
+    spanDropTable.classList.add(
+      this.getNextCodeElement(),
+      "synSQL",
+      "parent",
+      "sqlIdentifier",
+      "inputField",
+      "btnDropTable"
+    );
+    spanDropTable.setAttribute("data-sql-element", "DROP_TABLE");
+    spanDropTable.append("DROP TABLE");
+    spanDropTable.append(this.createLeerzeichen());
+
+    const spanTable = this.createTable(element.mainTable, 0, "DROP_TABLE_1");
+    spanDropTable.append(spanTable);
+    spanDropTable.append(this.createLeerzeichen());
+
+    currentCodeline.append(spanDropTable);
   }
 
   createJoin(element, currentCodeline) {
@@ -117,7 +167,7 @@ export class AstToSqlVerine {
       "sqlJoin",
       "parent",
       "sqlIdentifier",
-      "inputFields"
+      "inputField"
     );
     spanJoin.setAttribute("data-sql-element", "JOIN");
     spanJoin.append(this.createLeerzeichen());
@@ -143,7 +193,7 @@ export class AstToSqlVerine {
         spanJoin.append(this.createLeerzeichen());
 
         const spanOperator = document.createElement("span");
-        spanOperator.classList.add(this.getNextCodeElement(), "selOperators", "synOperators", "inputFields", "sqlIdentifier", "root");
+        spanOperator.classList.add(this.getNextCodeElement(), "selOperators", "synOperators", "inputField", "sqlIdentifier", "root");
         spanOperator.setAttribute("data-sql-element", "JOIN_3");
         spanOperator.innerHTML = element.operator;
         spanOperator.setAttribute("data-next-element", this.htmlElementCount -5);
@@ -168,7 +218,7 @@ export class AstToSqlVerine {
       "sqlWhere",
       "parent",
       "sqlIdentifier",
-      "inputFields"
+      "inputField"
     );
     spanWhere.setAttribute("data-sql-element", "WHERE");
     spanWhere.append(this.createLeerzeichen());
@@ -195,7 +245,7 @@ export class AstToSqlVerine {
       "sqlHaving",
       "parent",
       "sqlIdentifier",
-      "inputFields"
+      "inputField"
     );
     spanWhere.setAttribute("data-sql-element", "HAVING");
     spanWhere.append(this.createLeerzeichen());
@@ -223,7 +273,7 @@ export class AstToSqlVerine {
       "sqlWhere",
       "parent",
       "sqlIdentifier",
-      "inputFields"
+      "inputField"
     );
     spanWhere.setAttribute("data-sql-element", "WHERE");
     spanWhere.append(this.createLeerzeichen());
@@ -250,7 +300,7 @@ export class AstToSqlVerine {
       "sqlOrder",
       "parent",
       "sqlIdentifier",
-      "inputFields"
+      "inputField"
     );
     spanOrderBy.setAttribute("data-sql-element", "ORDER");
 
@@ -278,7 +328,7 @@ export class AstToSqlVerine {
         "synSQL",
         "sqlOrder",
         "sqlIdentifier",
-        "inputFields"
+        "inputField"
       );
       spanDirection.setAttribute("data-sql-element", field.type);
       spanDirection.append(this.createLeerzeichen());
@@ -301,7 +351,7 @@ export class AstToSqlVerine {
       "sqlGroup",
       "parent",
       "sqlIdentifier",
-      "inputFields"
+      "inputField"
     );
     spanGroupBy.setAttribute("data-sql-element", "GROUP");
 
@@ -328,7 +378,7 @@ export class AstToSqlVerine {
       "sqlOrder",
       "parent",
       "sqlIdentifier",
-      "inputFields"
+      "inputField"
     );
     spanLimit.setAttribute("data-sql-element", "LIMIT");
 
@@ -354,7 +404,7 @@ export class AstToSqlVerine {
       "sqlOrder",
       "parent",
       "sqlIdentifier",
-      "inputFields"
+      "inputField"
     );
     spanOffset.setAttribute("data-sql-element", "OFFSET");
 
@@ -412,7 +462,7 @@ export class AstToSqlVerine {
         );
         spanLeft.classList.add(
           this.getNextCodeElement(),
-          "inputFields",
+          "inputField",
           "sqlIdentifier",
           "root",
           "input",
@@ -441,7 +491,7 @@ export class AstToSqlVerine {
       "selOperators",
       "synOperators",
       "sqlWhere",
-      "inputFields",
+      "inputField",
       "sqlIdentifier",
       "root"
     );
@@ -478,7 +528,7 @@ export class AstToSqlVerine {
           const spanInVal = document.createElement("span");
           spanInVal.classList.add(
             this.getNextCodeElement(),
-            "inputFields",
+            "inputField",
             "sqlIdentifier",
             "input",
             "inputValue",
@@ -549,7 +599,7 @@ export class AstToSqlVerine {
             );
             spanRight.classList.add(
               this.getNextCodeElement(),
-              "inputFields",
+              "inputField",
               "sqlIdentifier",
               "root",
               "input",
@@ -580,7 +630,7 @@ export class AstToSqlVerine {
       spanRightFrom.setAttribute("data-sql-element", "EXP_BETWEEN");
       spanRightFrom.classList.add(
         this.getNextCodeElement(),
-        "inputFields",
+        "inputField",
         "sqlIdentifier",
         "root",
         "input",
@@ -605,7 +655,7 @@ export class AstToSqlVerine {
       spanRightTo.setAttribute("data-sql-element", "EXP_BETWEEN");
       spanRightTo.classList.add(
         this.getNextCodeElement(),
-        "inputFields",
+        "inputField",
         "sqlIdentifier",
         "root",
         "input",
@@ -794,11 +844,11 @@ export class AstToSqlVerine {
     let kommaNumber;
     let selectFieldNumber;
     if (type == "insertColumn") {
-      //Erstellt die passenden Nummern der VALUES (___, ___, ...) Kommas und InputFields
+      //Erstellt die passenden Nummern der VALUES (___, ___, ...) Kommas und inputField
       kommaNumber = 3 + numberOfValues * 2;
       selectFieldNumber = 4 + numberOfValues * 2;
     } else if (type == "insertValue") {
-      //Erstellt die passenden Nummern des INSERT INTO (___, ___, ...) Kommas und InputFields
+      //Erstellt die passenden Nummern des INSERT INTO (___, ___, ...) Kommas und inputField
       kommaNumber = (4 + numberOfValues * 2) * -1;
       selectFieldNumber = (5 + numberOfValues * 2) * -1;
     }
@@ -953,7 +1003,7 @@ export class AstToSqlVerine {
     spanSelSel.classList.add(
       this.getNextCodeElement(),
       "sqlIdentifier",
-      "inputFields"
+      "inputField"
     );
     if (idx > 0) {
       spanSelSel.classList.add("extended");
@@ -976,7 +1026,7 @@ export class AstToSqlVerine {
       "selColumn",
       "synColumns",
       "sqlIdentifier",
-      "inputFields",
+      "inputField",
       "root"
     );
     innerSpan.setAttribute("data-sql-element", sqlDataElement + "_AGGREGAT");
@@ -1011,7 +1061,7 @@ export class AstToSqlVerine {
             "selColumn",
             "synColumns",
             "sqlIdentifier",
-            "inputFields",
+            "inputField",
             "root"
           );
           spanStringFunc.append(innerSpan);
@@ -1026,7 +1076,7 @@ export class AstToSqlVerine {
             "synValue",
             "sqlIdentifier",
             "inputValue",
-            "inputFields",
+            "inputField",
             "root"
           );
 
@@ -1054,7 +1104,7 @@ export class AstToSqlVerine {
         "selColumn",
         "synColumns",
         "sqlIdentifier",
-        "inputFields",
+        "inputField",
         "root"
       );
       spanStringFunc.append(innerSpan);
