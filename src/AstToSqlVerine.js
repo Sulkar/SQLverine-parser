@@ -447,7 +447,7 @@ export class AstToSqlVerine {
         break;
 
       case "AGGREGATE":
-        conditionCount++;
+        //TODO: ?? Warum? conditionCount++;
         spanLeft = this.createAggregate(
           condition.left,
           0,
