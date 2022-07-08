@@ -528,12 +528,12 @@ Operator
   / "="        { return "="; }
   / "LIKE"i  { return "LIKE"; }
 
-Identifier =  Input / ColumnNumber
+Identifier =  Input / TableColumn
 IdentifierRest = _ "," _ s:Identifier {
 	return s;
 }
 
-ColumnNumber = x:[a-z0-9_%*]i xs:[a-z0-9_.%*]i* {
+TableColumn = x:[a-zäÄüÜöÖß0-9_%*]i xs:[a-zäÄüÜöÖß0-9_.%*]i* {
     let tempType = ""    
     if(isNaN(text(x.concat(xs)))) tempType = "COLUMN"
     else tempType = "INPUT"
