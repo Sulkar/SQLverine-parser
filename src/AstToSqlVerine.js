@@ -107,6 +107,12 @@ export class AstToSqlVerine {
           currentCodeline = this.createCodeline();
           this.createDeleteFrom(element, currentCodeline);
           break;
+        
+        case "UPDATE":
+          currentCodeline = this.createCodeline();
+          this.createUpdateForm(element, currentCodeline);
+          break;
+
         default:
           console.log("Element of type " + element.type + " canot be parsed.");
       }
@@ -115,6 +121,55 @@ export class AstToSqlVerine {
     //console.log(this.outputContainer.innerHTML);
   }
 
+  createUpdateForm(element, currentCodeline){
+    const spanUpdateFrom = document.createElement("span");
+    spanUpdateFrom.classList.add(
+      this.getNextCodeElement(),
+      "synSQL",
+      "parent",
+      "sqlIdentifier",
+      "inputField",
+      "btnSQLUpdate"
+    );
+    spanUpdateFrom.setAttribute("data-sql-element", "UPDATE");
+    spanUpdateFrom.append("UPDATE");
+    spanUpdateFrom.append(this.createLeerzeichen());
+
+    const spanTable = this.createTable(element.mainTable, 0, "UPDATE_1");
+    spanUpdateFrom.append(spanTable);
+    spanUpdateFrom.append(this.createLeerzeichen());
+    //
+
+    const spanSet = document.createElement("span");
+    spanSet.innerHTML = "SET";
+    spanSet.setAttribute("data-goto-element", "parent");
+    spanSet.classList.add(this.getNextCodeElement());
+    spanUpdateFrom.append(spanSet);
+
+    spanUpdateFrom.append(this.createLeerzeichen());
+
+    // start loop
+    element.updates.forEach((updateElement, index) =>{
+      if(index > 0){
+        spanUpdateFrom.append(this.createLeerzeichenMitKomma());
+      }
+      //column
+      const columnSpan = this.createColumn (updateElement.left, index, "UPDATE_2");
+      spanUpdateFrom.append(columnSpan);
+      spanUpdateFrom.append(this.createLeerzeichen());
+      // =
+      const spanSet = document.createElement("span");
+      spanSet.innerHTML = "=";
+      spanSet.setAttribute("data-goto-element", "parent");
+      spanSet.classList.add(this.getNextCodeElement());
+      spanUpdateFrom.append(spanSet);
+      spanUpdateFrom.append(this.createLeerzeichen());
+      // input
+      const inputSpan = this.createValue(updateElement.right, index, "UPDATE_3"); 
+      spanUpdateFrom.append(inputSpan);
+    });
+    currentCodeline.append(spanUpdateFrom); 
+  }
   createDeleteFrom(element, currentCodeline) {
     const spanDeleteFrom = document.createElement("span");
     spanDeleteFrom.classList.add(
