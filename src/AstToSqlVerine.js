@@ -113,12 +113,145 @@ export class AstToSqlVerine {
           this.createUpdateForm(element, currentCodeline);
           break;
 
+        case "ALTER TABLE":
+          currentCodeline = this.createCodeline();
+          this.createAlterForm(element, currentCodeline);
+          break;
+
+        case "ALTER DROP COLUMN":         
+          this.createAlterDropColumnForm(element, currentCodeline);
+          break;
+
+        case "ALTER RENAME TABLE":         
+          this.createAlterRenameTableForm(element, currentCodeline);
+          break;
+          
+        case "ALTER RENAME COLUMN":         
+          this.createAlterRenameColumnForm(element, currentCodeline);
+          break;
+
+        case "ALTER ADD COLUMN":         
+          this.createAlterAddColumnForm(element, currentCodeline);
+          break;
+          
         default:
           console.log("Element of type " + element.type + " canot be parsed.");
       }
     });
 
     //console.log(this.outputContainer.innerHTML);
+  }
+  createAlterAddColumnForm(element, currentCodeline){
+    const spanAlterAddColumnForm = document.createElement("span");
+    spanAlterAddColumnForm.classList.add(
+      this.getNextCodeElement(),
+      "synSQL",
+      "parent",
+      "sqlIdentifier",
+      "inputField"
+    );
+    spanAlterAddColumnForm.setAttribute("data-sql-element", "ADD_COLUMN");
+    spanAlterAddColumnForm.append(this.createLeerzeichen());
+    spanAlterAddColumnForm.append("RENAME TO");
+    spanAlterAddColumnForm.append(this.createLeerzeichen());
+
+    const spanVale = this.createValue(element.selectField, 0, "ADD_COLUMN_1");
+    spanAlterAddColumnForm.append(spanVale);
+    spanAlterAddColumnForm.append(this.createLeerzeichen());
+
+    //Typfeld wird erstellt
+    const spanDatatype = this.createInputField(0);
+    spanDatatype.setAttribute("data-sql-element", "ADD_COLUMN_2");
+    spanDatatype.innerHTML = element.datatype;
+    spanDatatype.classList.add("synTyp", "selTyp");
+    spanAlterAddColumnForm.append(spanDatatype);
+
+    currentCodeline.append(spanAlterAddColumnForm); 
+  }
+
+  createAlterRenameColumnForm(element, currentCodeline){
+    const spanAlterRenameColumnForm = document.createElement("span");
+    spanAlterRenameColumnForm.classList.add(
+      this.getNextCodeElement(),
+      "synSQL",
+      "parent",
+      "sqlIdentifier",
+      "inputField"
+    );
+    spanAlterRenameColumnForm.setAttribute("data-sql-element", "RENAME_TO");
+    spanAlterRenameColumnForm.append(this.createLeerzeichen());
+    spanAlterRenameColumnForm.append("RENAME");
+    spanAlterRenameColumnForm.append(this.createLeerzeichen());
+
+    const spanColumn = this.createColumn(element.selectField1, 0, "RENAME_TO_1");
+    spanAlterRenameColumnForm.append(spanColumn);
+
+    spanAlterRenameColumnForm.append(this.createLeerzeichen());
+    spanAlterRenameColumnForm.append("TO");
+    spanAlterRenameColumnForm.append(this.createLeerzeichen());
+
+    const spanValue = this.createValue(element.selectField2, 0, "RENAME_TO_2");
+    spanAlterRenameColumnForm.append(spanValue);
+
+    currentCodeline.append(spanAlterRenameColumnForm); 
+  }
+
+  createAlterRenameTableForm(element, currentCodeline){
+    const spanAlterRenameTableForm = document.createElement("span");
+    spanAlterRenameTableForm.classList.add(
+      this.getNextCodeElement(),
+      "synSQL",
+      "parent",
+      "sqlIdentifier",
+      "inputField"
+    );
+    spanAlterRenameTableForm.setAttribute("data-sql-element", "RENAME_TABLE");
+    spanAlterRenameTableForm.append(this.createLeerzeichen());
+    spanAlterRenameTableForm.append("RENAME TO");
+    spanAlterRenameTableForm.append(this.createLeerzeichen());
+
+    const spanTable = this.createValue(element.selectField, 0, "RENAME_TABLE_1");
+    spanAlterRenameTableForm.append(spanTable);
+
+    currentCodeline.append(spanAlterRenameTableForm); 
+  }
+  createAlterDropColumnForm(element, currentCodeline){
+    const spanAlterDropColumnForm = document.createElement("span");
+    spanAlterDropColumnForm.classList.add(
+      this.getNextCodeElement(),
+      "synSQL",
+      "parent",
+      "sqlIdentifier",
+      "inputField"
+    );
+    spanAlterDropColumnForm.setAttribute("data-sql-element", "DROP_COLUMN");
+    spanAlterDropColumnForm.append(this.createLeerzeichen());
+    spanAlterDropColumnForm.append("DROP COLUMN");
+    spanAlterDropColumnForm.append(this.createLeerzeichen());
+
+    const spanTable = this.createColumn(element.selectField, 0, "DROP_COLUMN_1");
+    spanAlterDropColumnForm.append(spanTable);
+
+    currentCodeline.append(spanAlterDropColumnForm); 
+  }
+  createAlterForm(element, currentCodeline){
+    const spanAlterForm = document.createElement("span");
+    spanAlterForm.classList.add(
+      this.getNextCodeElement(),
+      "synSQL",
+      "parent",
+      "sqlIdentifier",
+      "inputField",
+      "btnAlterTable"
+    );
+    spanAlterForm.setAttribute("data-sql-element", "ALTER_TABLE");
+    spanAlterForm.append("ALTER TABLE");
+    spanAlterForm.append(this.createLeerzeichen());
+
+    const spanTable = this.createTable(element.mainTable, 0, "ALTER_TABLE_1");
+    spanAlterForm.append(spanTable);
+
+    currentCodeline.append(spanAlterForm); 
   }
 
   createUpdateForm(element, currentCodeline){
