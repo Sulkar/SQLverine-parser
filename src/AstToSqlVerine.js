@@ -152,7 +152,7 @@ export class AstToSqlVerine {
     );
     spanAlterAddColumnForm.setAttribute("data-sql-element", "ADD_COLUMN");
     spanAlterAddColumnForm.append(this.createLeerzeichen());
-    spanAlterAddColumnForm.append("RENAME TO");
+    spanAlterAddColumnForm.append("ADD COLUMN");
     spanAlterAddColumnForm.append(this.createLeerzeichen());
 
     const spanVale = this.createValue(element.selectField, 0, "ADD_COLUMN_1");
