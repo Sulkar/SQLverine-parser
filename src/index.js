@@ -13,10 +13,8 @@ import {
   AstToSqlVerine
 } from "./AstToSqlVerine"
 
-import {
-  parse
-} from "./sqlverine.pegjs"; 
 
+import { parse } from './sqlverine.js';
 
 //global variables
 var CURRENT_VERINE_DATABASE;

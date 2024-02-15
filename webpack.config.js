@@ -15,17 +15,14 @@ module.exports = {
 
     //setzt das Root Verzeichnis des Webpack Development Servers auf einen Ordner
     devServer: {
-        contentBase: 'dist',
-    },
-
+        static: path.join(__dirname, "dist"),
+      },
+      
     devtool:"source-map",
 
     module: {
         rules: [
-        {
-            test: /\.pegjs$/,
-            use: 'pegjs-loader'
-        },
+ 
         {
             test: /\.css$/i,
             use: [MiniCssExtractPlugin.loader, "css-loader"],
